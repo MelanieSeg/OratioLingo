@@ -12,6 +12,7 @@ import com.example.oratiolingo.databinding.ActivityPantallaVideosBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlin.math.log
 
 class PantallaVideos : AppCompatActivity() {
     private lateinit var binding: ActivityPantallaVideosBinding
@@ -63,6 +64,7 @@ class PantallaVideos : AppCompatActivity() {
 
         binding.lnlNiveles.setOnClickListener {
             abrirPantallaNiveles()
+
         }
 
 
