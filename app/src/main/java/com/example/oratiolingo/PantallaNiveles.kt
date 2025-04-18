@@ -41,13 +41,19 @@ class PantallaNiveles : AppCompatActivity() {
                     logoutDialog?.dismiss()
                 }
 
+                val btnEditarPerfil = dialogView.findViewById<Button>(R.id.btnEditarPerfil)
+                btnEditarPerfil.setOnClickListener {
+                    // Acción para editar perfil
+                    abrirEditarPerfil()
+                    logoutDialog?.dismiss()
+                }
+
                 logoutDialog?.show()
             }
         }
 
         binding.lnlProgreso.setOnClickListener{
             abrirPantallaProgreso()
-            Log.d("PantallaPrincipal", "Botón Progreso presionado")
         }
 
         binding.lnlJuegos.setOnClickListener{
@@ -84,5 +90,11 @@ class PantallaNiveles : AppCompatActivity() {
     private fun abrirPantallaVideos(){
         val intent = Intent(this, PantallaVideos::class.java)
         startActivity(intent)
+    }
+
+    private fun abrirEditarPerfil(){
+        val intent = Intent(this, PantallaPerfil::class.java)
+        startActivity(intent)
+
     }
 }

@@ -5,16 +5,16 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     tools:context=".PantallaProgreso">
 
-    <!-- Iconos -->
+    <!-- Barra superior -->
     <View
         android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:background="#6a4c93"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,17 +23,16 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:background="@drawable/ic_circle_background"
-        android:layout_marginStart="172dp"
-        android:src="@drawable/logo"
+        android:src="@drawable/ic_corazon_coreano"
         app:layout_constraintBottom_toBottomOf="@+id/topBar"
         app:layout_constraintStart_toStartOf="@+id/topBar"
         app:layout_constraintTop_toTopOf="@+id/topBar"
-        app:layout_constraintVertical_bias="0.7" />
+        android:layout_marginStart="16dp" />
 
     <ImageView
         android:id="@+id/imgPerfil"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/ic_circle_background"
         android:padding="4dp"
@@ -42,15 +41,164 @@
         app:layout_constraintEnd_toEndOf="@+id/topBar"
         app:layout_constraintTop_toTopOf="@+id/topBar" />
 
+    <!-- Sección de título y botones -->
 
+    <!-- Tarjeta de Progreso General -->
 
+    <TextView
+        android:id="@+id/tvTitulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="200dp"
+        android:text="Mi Progreso"
+        android:textColor="#000000"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/cardProgreso"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topBar" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardProgreso"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:layout_marginTop="200dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="160dp">
 
+    </androidx.cardview.widget.CardView>
 
+    <!-- Sección de Tiempo de Estudio -->
 
+    <TextView
+        android:id="@+id/tvTiempoEstudio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="96dp"
+        android:text="Tiempo de estudio"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:layout_editor_absoluteX="0dp" />
 
+    <TextView
+        android:id="@+id/tvMotivacional"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="¡Sigue así! ¡Vas por buen camino!"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgMotivacional" />
+
+    <ImageView
+        android:id="@+id/imgMotivacional"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="48dp"
+        android:src="@drawable/ic_hands_heart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutEstadisticas" />
+
+    <LinearLayout
+        android:id="@+id/layoutEstadisticas"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTiempoEstudio">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imgTiempoTotal"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tiempo_total"
+                tools:layout_editor_absoluteX="97dp"
+                tools:layout_editor_absoluteY="558dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5h 30m"
+                android:textColor="#6a4c93"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:layout_editor_absoluteX="110dp"
+                tools:layout_editor_absoluteY="646dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiempo total"
+                android:textSize="14sp"
+                tools:layout_editor_absoluteX="97dp"
+                tools:layout_editor_absoluteY="668dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:layout_editor_absoluteX="258dp"
+            tools:layout_editor_absoluteY="558dp">
+
+            <ImageView
+                android:id="@+id/imgTiempoSesion"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tiempo_sesion"
+                tools:layout_editor_absoluteX="338dp"
+                tools:layout_editor_absoluteY="558dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15m"
+                android:textColor="#6a4c93"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:layout_editor_absoluteX="362dp"
+                tools:layout_editor_absoluteY="646dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sesión promedio"
+                android:textSize="14sp"
+                tools:layout_editor_absoluteX="325dp"
+                tools:layout_editor_absoluteY="668dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Mensaje motivacional -->
 
     <!-- Barra de navegación -->
+
     <LinearLayout
         android:id="@+id/bottomNavBar"
         android:layout_width="0dp"
@@ -74,14 +222,13 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-
                 android:src="@drawable/ic_levels_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Niveles"
-                android:textColor="#6a4c93"
+                android:textColor="#666666"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -144,7 +291,94 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Progreso"
-                android:textColor="#666666"
+                android:textColor="#6a4c93"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitulo"
+        tools:layout_editor_absoluteX="0dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Progreso general"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:progress="10"
+                android:progressTint="#6a4c93" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="10%"
+                android:textColor="#6a4c93"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0"
+                android:textAlignment="center"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2"
+                android:textAlignment="center"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Módulos completados"
+                android:textAlignment="center"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Niveles completados"
+                android:textAlignment="center"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>

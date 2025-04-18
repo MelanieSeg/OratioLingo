@@ -46,6 +46,13 @@ class PantallaJuegos : AppCompatActivity() {
                     logoutDialog?.dismiss()
                 }
 
+                val btnEditarPerfil = dialogView.findViewById<Button>(R.id.btnEditarPerfil)
+                btnEditarPerfil.setOnClickListener {
+                    // Acción para editar perfil
+                    abrirEditarPerfil()
+                    logoutDialog?.dismiss()
+                }
+
                 logoutDialog?.show()
             }
         }
@@ -90,5 +97,10 @@ class PantallaJuegos : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun abrirEditarPerfil(){
+        val intent = Intent(this, PantallaPerfil::class.java)
+        startActivity(intent)
+
+    }
 
 }
