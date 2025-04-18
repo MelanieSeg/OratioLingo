@@ -68,8 +68,6 @@ class PantallaVideos : AppCompatActivity() {
         }
 
 
-
-
     }
 
     private fun cerrarSesion() {
