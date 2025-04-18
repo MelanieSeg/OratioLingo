@@ -9,7 +9,7 @@
         android:id="@+id/textViewLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="¿Deseas cerrar sesión?"
+        android:text="@string/deseas_cerrar_sesi_n"
         android:textSize="18sp"
         android:textAlignment="center"
         android:paddingBottom="16dp" />
@@ -18,5 +18,5 @@
         android:id="@+id/btnCerrarSesion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cerrar sesión" />
+        android:text="@string/cerrar_sesi_n" />
 </LinearLayout>
