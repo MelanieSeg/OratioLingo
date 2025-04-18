@@ -27,7 +27,7 @@
         android:layout_height="40dp"
         android:background="@drawable/ic_circle_background"
         android:layout_marginStart="172dp"
-        android:src="@drawable/ic_corazon_coreano"
+        android:src="@drawable/logo"
         app:layout_constraintBottom_toBottomOf="@+id/topBar"
         app:layout_constraintStart_toStartOf="@+id/topBar"
         app:layout_constraintTop_toTopOf="@+id/topBar"
@@ -255,7 +255,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Examen de nivel"
+            android:text="@string/examen_de_nivel"
             android:textColor="#000000"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -267,7 +267,7 @@
             android:id="@+id/examSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pon a prueba tus conocimientos"
+            android:text="@string/pon_a_prueba_tus_conocimientos"
             android:textColor="#666666"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -409,7 +409,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Niveles"
+                android:text="@string/niveles"
                 android:textColor="#6a4c93"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -430,7 +430,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Videos"
+                android:text="@string/videos"
                 android:textColor="#666666"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -451,7 +451,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Juegos"
+                android:text="@string/juegos"
                 android:textColor="#666666"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -472,7 +472,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Progreso"
+                android:text="@string/progreso"
                 android:textColor="#666666"
                 android:textSize="12sp" />
         </LinearLayout>

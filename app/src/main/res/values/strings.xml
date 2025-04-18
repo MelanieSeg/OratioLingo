@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">OratioLingo</string>
+    <string name="oratiolingo">OratioLingo</string>
+    <string name="correo_electronico">Correo Electronico</string>
+    <string name="registrarme">Registrarme</string>
+    <string name="videos">Videos</string>
+    <string name="juegos">Juegos</string>
+    <string name="progreso">Progreso</string>
+    <string name="contrase_a">Contraseña</string>
+    <string name="iniciar_sesi_n">Iniciar Sesión</string>
+    <string name="regstrate">¿No estas registrado? Registrate</string>
+    <string name="examen_de_nivel">Examen de nivel</string>
+    <string name="pon_a_prueba_tus_conocimientos">Pon a prueba tus conocimientos</string>
+    <string name="niveles">Niveles</string>
+    <string name="ingrese_su_correo_electr_nico">Ingrese su correo electrónico</string>
+    <string name="ingrese_su_contrase_a">Ingrese su contraseña:</string>
+    <string name="confirmar_contrase_a">Confirmar contraseña:</string>
+    <string name="registrarmebotn">Registrarme</string>
 </resources>

@@ -24,7 +24,7 @@
         android:layout_height="40dp"
         android:background="@drawable/ic_circle_background"
         android:layout_marginStart="172dp"
-        android:src="@drawable/ic_corazon_coreano"
+        android:src="@drawable/logo"
         app:layout_constraintBottom_toBottomOf="@+id/topBar"
         app:layout_constraintStart_toStartOf="@+id/topBar"
         app:layout_constraintTop_toTopOf="@+id/topBar"
