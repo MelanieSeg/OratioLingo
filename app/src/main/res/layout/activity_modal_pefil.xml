@@ -5,14 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/textViewLogout"
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="¿Deseas cerrar sesión?"
-        android:textSize="18sp"
-        android:textAlignment="center"
-        android:paddingBottom="16dp" />
+        android:text="Editar perfil"
+        android:id="@+id/btnEditarPerfil"
+        />
 
     <Button
         android:id="@+id/btnCerrarSesion"

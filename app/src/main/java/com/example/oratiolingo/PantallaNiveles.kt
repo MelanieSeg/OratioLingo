@@ -47,7 +47,6 @@ class PantallaNiveles : AppCompatActivity() {
 
         binding.lnlProgreso.setOnClickListener{
             abrirPantallaProgreso()
-            Log.d("PantallaPrincipal", "Botón Progreso presionado")
         }
 
         binding.lnlJuegos.setOnClickListener{

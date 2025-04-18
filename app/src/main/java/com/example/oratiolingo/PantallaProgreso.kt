@@ -6,22 +6,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.oratiolingo.databinding.ActivityPantallaPrincipalBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import android.content.Intent
 import android.widget.Button
+import com.example.oratiolingo.databinding.ActivityPantallaProgresoBinding
 
 class PantallaProgreso : AppCompatActivity() {
-    private lateinit var binding: ActivityPantallaPrincipalBinding
+    private lateinit var binding: ActivityPantallaProgresoBinding
     private lateinit var auth: FirebaseAuth
     private var logoutDialog: AlertDialog? = null // Para manejar el estado del modal
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         auth = Firebase.auth
-        binding = ActivityPantallaPrincipalBinding.inflate(layoutInflater)
+        binding = ActivityPantallaProgresoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
