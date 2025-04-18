@@ -45,6 +45,13 @@ class PantallaProgreso : AppCompatActivity() {
                     logoutDialog?.dismiss()
                 }
 
+                val btnEditarPerfil = dialogView.findViewById<Button>(R.id.btnEditarPerfil)
+                btnEditarPerfil.setOnClickListener {
+                    // Acción para editar perfil
+                    abrirEditarPerfil()
+                    logoutDialog?.dismiss()
+                }
+
                 logoutDialog?.show()
             }
         }
@@ -92,6 +99,12 @@ class PantallaProgreso : AppCompatActivity() {
     private fun abrirPantallaNiveles(){
         val intent = Intent(this, PantallaNiveles::class.java)
         startActivity(intent)
+    }
+
+    private fun abrirEditarPerfil(){
+        val intent = Intent(this, PantallaPerfil::class.java)
+        startActivity(intent)
+
     }
 
 }
