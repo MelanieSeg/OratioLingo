@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.oratiolingo.databinding.ActivityMainBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -53,7 +51,7 @@ class MainActivity  : AppCompatActivity() {
             .addOnCompleteListener(this){
                 if (it.isSuccessful){
                     Toast.makeText(this, "Bienvenido", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, PantallaPrincipal::class.java)
+                    val intent = Intent(this, PantallaNiveles::class.java)
                     startActivity(intent)
                     finish()
                 }else{

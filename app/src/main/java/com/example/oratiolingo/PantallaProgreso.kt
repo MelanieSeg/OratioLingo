@@ -1,31 +1,37 @@
 package com.example.oratiolingo
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.oratiolingo.databinding.ActivityPantallaPrincipalBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import android.content.Intent
+import android.widget.Button
 
-class PantallaPrincipal : AppCompatActivity() {
+class PantallaProgreso : AppCompatActivity() {
     private lateinit var binding: ActivityPantallaPrincipalBinding
     private lateinit var auth: FirebaseAuth
     private var logoutDialog: AlertDialog? = null // Para manejar el estado del modal
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityPantallaPrincipalBinding.inflate(layoutInflater)
         auth = Firebase.auth
+        binding = ActivityPantallaPrincipalBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
 
-        // Imagen que abre/cierra el modal
-        binding.imgPerfil.setOnClickListener {
+        //Llamada al modal de perfil
+        binding.imgPerfil.setOnClickListener{
             if (logoutDialog?.isShowing == true) {
                 logoutDialog?.dismiss()
             } else {
@@ -33,7 +39,6 @@ class PantallaPrincipal : AppCompatActivity() {
                 logoutDialog = AlertDialog.Builder(this)
                     .setView(dialogView)
                     .create()
-
                 val btnCerrarSesion = dialogView.findViewById<Button>(R.id.btnCerrarSesion)
                 btnCerrarSesion.setOnClickListener {
                     cerrarSesion()
@@ -43,6 +48,25 @@ class PantallaPrincipal : AppCompatActivity() {
                 logoutDialog?.show()
             }
         }
+
+
+        binding.lnlNiveles.setOnClickListener{
+            abrirPantallaNiveles()
+        }
+
+        binding.lnlJuegos.setOnClickListener{
+            abrirPantallaJuegos()
+        }
+
+        binding.lnlVideos.setOnClickListener {
+            abrirPantallaVideos()
+        }
+
+
+
+
+
+
     }
 
     private fun cerrarSesion() {
@@ -51,6 +75,23 @@ class PantallaPrincipal : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
-        }
     }
+    }
+
+    private fun abrirPantallaJuegos(){
+        val intent = Intent(this, PantallaJuegos::class.java)
+        startActivity(intent)
+
+    }
+
+    private fun abrirPantallaVideos(){
+        val intent = Intent(this, PantallaVideos::class.java)
+        startActivity(intent)
+    }
+
+    private fun abrirPantallaNiveles(){
+        val intent = Intent(this, PantallaNiveles::class.java)
+        startActivity(intent)
+    }
+
 }

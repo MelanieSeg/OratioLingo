@@ -13,10 +13,19 @@
         android:theme="@style/Theme.OratioLingo"
         tools:targetApi="31">
         <activity
+            android:name=".PantallaJuegos"
+            android:exported="false" />
+        <activity
+            android:name=".PantallaVideos"
+            android:exported="false" />
+        <activity
+            android:name=".PantallaProgreso"
+            android:exported="false" />
+        <activity
             android:name=".ModalPefil"
             android:exported="false" />
         <activity
-            android:name=".PantallaPrincipal"
+            android:name=".PantallaNiveles"
             android:exported="false" />
         <activity
             android:name=".Registrarme"

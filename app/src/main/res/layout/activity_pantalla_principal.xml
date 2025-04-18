@@ -6,11 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#f5f5f5"
-    tools:context=".PantallaPrincipal">
+    tools:context=".PantallaNiveles">
 
-    <!-- Top Bar -->
+    <!-- Barra superior -->
 
-    <!-- Top Bar Icons -->
+    <!-- Iconos -->
     <View
         android:id="@+id/topBar"
         android:layout_width="0dp"
@@ -45,7 +45,7 @@
         app:layout_constraintEnd_toEndOf="@+id/topBar"
         app:layout_constraintTop_toTopOf="@+id/topBar" />
 
-    <!-- Levels Path Container -->
+    <!-- Contenedor de niveles -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/levelsContainer"
         android:layout_width="0dp"
@@ -59,7 +59,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/topBar">
 
-        <!-- First Row - Completed Levels -->
+        <!-- Primera columna -->
         <FrameLayout
             android:id="@+id/level1"
             android:layout_width="64dp"
@@ -146,7 +146,7 @@
                 android:textStyle="bold" />
         </FrameLayout>
 
-        <!-- Dotted Path to Second Row -->
+        <!-- Camino hacia la segunda columna -->
         <ImageView
             android:id="@+id/path3_4"
             android:layout_width="24dp"
@@ -156,7 +156,7 @@
             app:layout_constraintStart_toStartOf="@+id/level3"
             app:layout_constraintTop_toBottomOf="@+id/level3" />
 
-        <!-- Second Row - Locked Levels -->
+        <!-- Segunda columna "Niveles bloqueados" -->
         <FrameLayout
             android:id="@+id/level6"
             android:layout_width="64dp"
@@ -239,7 +239,7 @@
                 android:src="@drawable/ic_lock_icon" />
         </FrameLayout>
 
-        <!-- Exam Title and Divider -->
+        <!-- Titulo de examen y divisor -->
         <View
             android:id="@+id/examDivider"
             android:layout_width="0dp"
@@ -296,7 +296,7 @@
                 android:src="@drawable/ic_lock_icon" />
         </FrameLayout>
 
-        <!-- Third Row - Locked Levels -->
+        <!-- Tercera columna "Niveles bloqueados" -->
         <FrameLayout
             android:id="@+id/level7"
             android:layout_width="64dp"
@@ -379,7 +379,7 @@
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Barra de navegación -->
     <LinearLayout
         android:id="@+id/bottomNavBar"
         android:layout_width="0dp"
@@ -393,7 +393,7 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
-            android:id="@+id/tabNiveles"
+            android:id="@+id/lnlNiveles"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -403,6 +403,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+
                 android:src="@drawable/ic_levels_icon" />
 
             <TextView
@@ -414,7 +415,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/tabVideos"
+            android:id="@+id/lnlVideos"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -435,7 +436,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/tabJuegos"
+            android:id="@+id/lnlJuegos"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -456,7 +457,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/tabProgreso"
+            android:id="@+id/lnlProgreso"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
