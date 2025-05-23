@@ -1,0 +1,1 @@
+ C:\\Users\\benja\\Desktop\\UA_2025\\Lenguajes\ Modernos\\gestos\\.dart_tool\\flutter_build\\0e5611d3aa8625141725c3bb59e6f5e3\\native_assets.json: 
