@@ -1,3 +1,20 @@
+<<<<<<< HEAD
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+=======
 # Miscellaneous
 *.class
 *.log
@@ -43,3 +60,4 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+>>>>>>> c552c9b3ba9a7f01810560fb627ae4b8e764bfc8

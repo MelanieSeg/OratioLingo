@@ -1,4 +1,4 @@
-name: gestos
+name: OratioLingo
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
 
 dev_dependencies:
   flutter_test:

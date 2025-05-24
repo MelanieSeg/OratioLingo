@@ -1,4 +1,4 @@
-package com.example.gestos
+package com.example.oratiolingo
 
 import io.flutter.embedding.android.FlutterActivity
 

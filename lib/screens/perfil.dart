@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme_notifier.dart'; // <-- Importa el notifier
 // import 'package:firebase_auth/firebase_auth.dart';
 
 class PantallaPerfil extends StatefulWidget {
@@ -11,11 +12,11 @@ class PantallaPerfil extends StatefulWidget {
 class _PantallaPerfilState extends State<PantallaPerfil> {
   // Firebase Auth instance (comentado)
   // final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // Variables para los switches
   bool notificationsEnabled = true;
   bool darkThemeEnabled = false;
-  
+
   // Variables para información del usuario (valores de ejemplo)
   String username = "Poro Lolero";
   String email = "test@correotest.cl";
@@ -49,7 +50,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
       Navigator.pushReplacementNamed(context, '/main');
     });
     */
-    
+
     // Implementación temporal sin Firebase
     Navigator.pushReplacementNamed(context, '/main');
   }
@@ -65,16 +66,17 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     // Implementar funcionalidad para cambiar contraseña
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cambiar Contraseña'),
-        content: const Text('Función no implementada'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Cambiar Contraseña'),
+            content: const Text('Función no implementada'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -85,19 +87,19 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Header con información del usuario
           _buildHeader(),
-          
+
           // Contenido principal
           Expanded(
             child: Stack(
               children: [
                 // Card con información
                 _buildContentCard(),
-                
+
                 // Botón flotante de editar perfil
                 Positioned(
                   top: 16,
@@ -107,7 +109,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
               ],
             ),
           ),
-          
+
           // Barra de navegación inferior
           _buildBottomNavigation(),
         ],
@@ -119,9 +121,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     return Container(
       height: 200,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF6A4C93),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFF6A4C93)),
       child: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -141,7 +141,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
               ),
             ),
             const SizedBox(height: 8),
-            
+
             // Nombre de usuario
             Text(
               username,
@@ -151,14 +151,11 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             // Email
             Text(
               email,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ],
         ),
@@ -167,21 +164,20 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   }
 
   Widget _buildContentCard() {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 88),
       transform: Matrix4.translationValues(0, -32, 0),
       child: Card(
+        color: theme.cardColor, // <-- Usa el color del tema
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Información Personal
                 _buildSectionTitle('Información Personal'),
                 const SizedBox(height: 8),
                 _buildInfoField('Nombre', username),
@@ -190,28 +186,29 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
                 const SizedBox(height: 8),
                 _buildInfoField('Fecha de Creación', registrationDate),
                 const SizedBox(height: 24),
-                
-                // Preferencias
                 _buildSectionTitle('Preferencias'),
                 const SizedBox(height: 8),
-                _buildSwitchOption('Notificaciones', notificationsEnabled, (value) {
+                _buildSwitchOption('Notificaciones', notificationsEnabled, (
+                  value,
+                ) {
                   setState(() {
                     notificationsEnabled = value;
                   });
-                  // Guardar preferencia en SharedPreferences
                 }),
                 const SizedBox(height: 8),
-                _buildSwitchOption('Tema Nocturno', darkThemeEnabled, (value) {
-                  setState(() {
-                    darkThemeEnabled = value;
-                  });
-                  // Implementar cambio de tema
-                }),
+                _buildSwitchOption(
+                  'Tema Nocturno',
+                  themeNotifier.value ==
+                      ThemeMode.dark, // <-- Lee el valor global
+                  (value) {
+                    themeNotifier.value =
+                        value ? ThemeMode.dark : ThemeMode.light;
+                    // No necesitas setState aquí, ValueListenableBuilder en main.dart se encarga
+                  },
+                ),
                 const SizedBox(height: 8),
                 _buildChangePasswordButton(),
                 const SizedBox(height: 24),
-                
-                // Botón de cerrar sesión
                 _buildLogoutButton(),
               ],
             ),
@@ -224,68 +221,57 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
-        color: Colors.black,
+        color:
+            Theme.of(context).textTheme.titleLarge?.color, // Usa color del tema
       ),
     );
   }
 
   Widget _buildInfoField(String label, String value) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
+        color: theme.colorScheme.surface, // Usa color del tema
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF666666),
-            ),
-          ),
+          Text(label, style: theme.textTheme.labelSmall),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-            ),
-          ),
+          Text(value, style: theme.textTheme.bodyMedium),
         ],
       ),
     );
   }
 
-  Widget _buildSwitchOption(String label, bool value, Function(bool) onChanged) {
+  Widget _buildSwitchOption(
+    String label,
+    bool value,
+    Function(bool) onChanged,
+  ) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
+        color: theme.colorScheme.surface, // Usa color del tema
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-            ),
-          ),
+          Text(label, style: theme.textTheme.bodyMedium),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF6A4C93),
+            activeColor: theme.colorScheme.primary,
           ),
         ],
       ),
@@ -293,23 +279,18 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   }
 
   Widget _buildChangePasswordButton() {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: _cambiarContrasena,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8F8F8),
+          color: theme.colorScheme.surface, // Usa color del tema
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: theme.dividerColor),
         ),
-        child: const Text(
-          'Cambiar Contraseña',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-          ),
-        ),
+        child: Text('Cambiar Contraseña', style: theme.textTheme.bodyMedium),
       ),
     );
   }
@@ -323,14 +304,9 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
           backgroundColor: const Color(0xFF6A4C93),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: const Text(
-          'Cerrar Sesión',
-          style: TextStyle(fontSize: 16),
-        ),
+        child: const Text('Cerrar Sesión', style: TextStyle(fontSize: 16)),
       ),
     );
   }
@@ -346,11 +322,12 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   }
 
   Widget _buildBottomNavigation() {
+    final theme = Theme.of(context);
     return Container(
       height: 72,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface, // Usa color del tema
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 8,
@@ -361,16 +338,41 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
       ),
       child: Row(
         children: [
-          _buildNavItem('Niveles', Icons.stairs, false, () => _navegarA('/niveles')),
-          _buildNavItem('Videos', Icons.play_circle, false, () => _navegarA('/videos')),
-          _buildNavItem('Juegos', Icons.games, false, () => _navegarA('/juegos')),
-          _buildNavItem('Progreso', Icons.trending_up, true, () => _navegarA('/progreso')),
+          _buildNavItem(
+            'Niveles',
+            Icons.stairs,
+            false,
+            () => _navegarA('/niveles'),
+          ),
+          _buildNavItem(
+            'Videos',
+            Icons.play_circle,
+            false,
+            () => _navegarA('/videos'),
+          ),
+          _buildNavItem(
+            'Juegos',
+            Icons.games,
+            false,
+            () => _navegarA('/juegos'),
+          ),
+          _buildNavItem(
+            'Progreso',
+            Icons.trending_up,
+            true,
+            () => _navegarA('/progreso'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(String label, IconData icon, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItem(
+    String label,
+    IconData icon,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -382,14 +384,20 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
               Icon(
                 icon,
                 size: 24,
-                color: isActive ? const Color(0xFF6A4C93) : const Color(0xFF666666),
+                color:
+                    isActive
+                        ? const Color(0xFF6A4C93)
+                        : const Color(0xFF666666),
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isActive ? const Color(0xFF6A4C93) : const Color(0xFF666666),
+                  color:
+                      isActive
+                          ? const Color(0xFF6A4C93)
+                          : const Color(0xFF666666),
                 ),
               ),
             ],
