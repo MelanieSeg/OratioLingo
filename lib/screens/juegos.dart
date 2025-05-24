@@ -7,7 +7,6 @@ class PantallaJuegos extends StatefulWidget {
   const PantallaJuegos({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _PantallaJuegosState createState() => _PantallaJuegosState();
 }
 
@@ -16,27 +15,23 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Color(0xFFf5f5f5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
-          // Barra superior
-          _buildTopBar(),
-          // Contenido principal (área vacía para juegos)
-          Expanded(
-            child: _buildGamesContent(),
-          ),
-          // Barra de navegación inferior
-          _buildBottomNavBar(),
+          _buildTopBar(theme),
+          Expanded(child: _buildGamesContent(theme)),
+          _buildBottomNavBar(theme),
         ],
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(ThemeData theme) {
     return Container(
       height: 60 + MediaQuery.of(context).padding.top,
-      color: Color(0xFF6a4c93),
+      color: theme.colorScheme.primary,
       child: Padding(
         padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
         child: Row(
@@ -47,12 +42,12 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.fingerprint,
-                    color: Color(0xFF6a4c93),
+                    color: theme.colorScheme.primary,
                     size: 24,
                   ),
                 ),
@@ -66,12 +61,12 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.person,
-                    color: Color(0xFF6a4c93),
+                    color: theme.colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -83,26 +78,21 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
     );
   }
 
-  Widget _buildGamesContent() {
-    // ignore: sized_box_for_whitespace
+  Widget _buildGamesContent(ThemeData theme) {
     return Container(
       width: double.infinity,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.games,
-              size: 80,
-              color: Color(0xFF6a4c93),
-            ),
+            Icon(Icons.games, size: 80, color: theme.colorScheme.primary),
             SizedBox(height: 20),
             Text(
               "Juegos",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF6a4c93),
+                color: theme.colorScheme.primary,
               ),
             ),
             SizedBox(height: 10),
@@ -111,7 +101,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Color(0xFF666666),
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
           ],
@@ -120,11 +110,11 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
     );
   }
 
-  Widget _buildBottomNavBar() {
+  Widget _buildBottomNavBar(ThemeData theme) {
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -135,16 +125,21 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       ),
       child: Row(
         children: [
-          _buildNavItem(Icons.layers, "Niveles", false),
-          _buildNavItem(Icons.play_circle_outline, "Videos", false),
-          _buildNavItem(Icons.games, "Juegos", true), // Esta pantalla está activa
-          _buildNavItem(Icons.trending_up, "Progreso", false),
+          _buildNavItem(Icons.layers, "Niveles", false, theme),
+          _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
+          _buildNavItem(Icons.games, "Juegos", true, theme),
+          _buildNavItem(Icons.trending_up, "Progreso", false, theme),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    ThemeData theme,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () => _onNavItemTap(label),
@@ -154,14 +149,18 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? Color(0xFF6a4c93) : Color(0xFF666666),
+              color:
+                  isSelected ? theme.colorScheme.primary : theme.disabledColor,
             ),
             SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? Color(0xFF6a4c93) : Color(0xFF666666),
+                color:
+                    isSelected
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
               ),
             ),
           ],
@@ -174,18 +173,20 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
     setState(() {
       _isModalVisible = !_isModalVisible;
     });
-    
+
     if (_isModalVisible) {
       _showProfileModal();
     }
   }
 
   void _showProfileModal() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: theme.cardColor,
           contentPadding: EdgeInsets.all(20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -198,7 +199,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                     _abrirEditarPerfil();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF6a4c93),
+                    backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -250,33 +251,35 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
   }
 
   void _cerrarSesion() {
-    // TODO: Implementar Firebase auth.signOut()
-    print("Cerrando sesión...");
-    // Navegar a pantalla de login
     Navigator.pushReplacementNamed(context, '/login');
   }
 
   void _abrirPantallaProgreso() {
-    print("Abriendo pantalla de progreso...");
     Navigator.pushReplacement(
-      context, 
-      MaterialPageRoute(builder: (context) => PantallaProgreso())
+      context,
+      MaterialPageRoute(builder: (context) => PantallaProgreso()),
     );
   }
 
   void _abrirPantallaVideos() {
-    print("Abriendo pantalla de videos...");
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PantallaVideos()));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaVideos()),
+    );
   }
 
   void _abrirPantallaNiveles() {
-    print("Abriendo pantalla de niveles...");
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PantallaNiveles()));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaNiveles()),
+    );
   }
 
   void _abrirEditarPerfil() {
-    print("Abriendo editar perfil...");
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaPerfil()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaPerfil()),
+    );
   }
 }
 

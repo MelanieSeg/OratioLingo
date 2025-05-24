@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\benja\AppData\Local\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\benja\Desktop\Programación UA 2025\Lenguajes Modernos\gestos"
+export "FLUTTER_ROOT=C:\Users\melit\dev\flutter_windows_3.32.0-stable\flutter"
+export "FLUTTER_APPLICATION_PATH=D:\OratioLingo"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"

@@ -16,27 +16,26 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Color(0xFFf5f5f5),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
           // Barra superior
-          _buildTopBar(),
+          _buildTopBar(theme),
           // Contenedor de niveles
-          Expanded(
-            child: _buildLevelsContainer(),
-          ),
+          Expanded(child: _buildLevelsContainer(theme)),
           // Barra de navegación inferior
-          _buildBottomNavBar(),
+          _buildBottomNavBar(theme),
         ],
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(ThemeData theme) {
     return Container(
       height: 60 + MediaQuery.of(context).padding.top,
-      color: Color(0xFF6a4c93),
+      color: theme.colorScheme.primary,
       child: Padding(
         padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
         child: Row(
@@ -47,12 +46,12 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.fingerprint,
-                    color: Color(0xFF6a4c93),
+                    color: theme.colorScheme.primary,
                     size: 24,
                   ),
                 ),
@@ -66,12 +65,12 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.person,
-                    color: Color(0xFF6a4c93),
+                    color: theme.colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -83,7 +82,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     );
   }
 
-  Widget _buildLevelsContainer() {
+  Widget _buildLevelsContainer(ThemeData theme) {
     return Padding(
       padding: EdgeInsets.all(16),
       child: SingleChildScrollView(
@@ -92,26 +91,26 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
             SizedBox(height: 16),
             // Primera fila de niveles
             _buildLevelRow([
-              _buildLevel(1, true, "✓"),
-              _buildLevel(2, true, "✓"),
-              _buildLevel(3, false, "3"),
+              _buildLevel(1, true, "✓", theme),
+              _buildLevel(2, true, "✓", theme),
+              _buildLevel(3, false, "3", theme),
             ]),
             SizedBox(height: 32),
             // Segunda fila de niveles
             _buildLevelRow([
-              _buildLevel(4, false, null),
-              _buildLevel(5, false, null),
-              _buildLevel(6, false, null),
+              _buildLevel(4, false, null, theme),
+              _buildLevel(5, false, null, theme),
+              _buildLevel(6, false, null, theme),
             ]),
             SizedBox(height: 32),
             // Sección de examen
-            _buildExamSection(),
+            _buildExamSection(theme),
             SizedBox(height: 32),
             // Tercera fila de niveles
             _buildLevelRow([
-              _buildLevel(7, false, null),
-              _buildLevel(8, false, null),
-              _buildLevel(9, false, null),
+              _buildLevel(7, false, null, theme),
+              _buildLevel(8, false, null, theme),
+              _buildLevel(9, false, null, theme),
             ]),
           ],
         ),
@@ -122,39 +121,35 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   Widget _buildLevelRow(List<Widget> levels) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        levels[0],
-        _buildPath(),
-        levels[1],
-        _buildPath(),
-        levels[2],
-      ],
+      children: [levels[0], _buildPath(), levels[1], _buildPath(), levels[2]],
     );
   }
 
-  Widget _buildLevel(int number, bool isCompleted, String? displayText) {
+  Widget _buildLevel(
+    int number,
+    bool isCompleted,
+    String? displayText,
+    ThemeData theme,
+  ) {
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: isCompleted ? Color(0xFF6a4c93) : Color(0xFF9E9E9E),
+        color: isCompleted ? theme.colorScheme.primary : theme.disabledColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
-        child: displayText != null
-            ? Text(
-                displayText,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: displayText == "✓" ? 20 : 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-            : Icon(
-                Icons.lock,
-                color: Colors.white,
-                size: 24,
-              ),
+        child:
+            displayText != null
+                ? Text(
+                  displayText,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: displayText == "✓" ? 20 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+                : Icon(Icons.lock, color: Colors.white, size: 24),
       ),
     );
   }
@@ -164,19 +159,19 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: Color(0xFFE0E0E0),
+        color: Theme.of(context).dividerColor,
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildExamSection() {
+  Widget _buildExamSection(ThemeData theme) {
     return Column(
       children: [
         Container(
           width: double.infinity,
           height: 2,
-          color: Color(0xFF6a4c93),
+          color: theme.colorScheme.primary,
         ),
         SizedBox(height: 8),
         Text(
@@ -184,14 +179,14 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         Text(
           "Pon a prueba tus conocimientos",
           style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF666666),
+            color: theme.textTheme.bodyMedium?.color,
           ),
         ),
         SizedBox(height: 16),
@@ -199,22 +194,14 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Color(0xFFFFD700),
+            color: Colors.amber[700],
             shape: BoxShape.circle,
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(
-                Icons.star,
-                color: Colors.white,
-                size: 40,
-              ),
-              Icon(
-                Icons.lock,
-                color: Colors.grey[600],
-                size: 24,
-              ),
+              Icon(Icons.star, color: Colors.white, size: 40),
+              Icon(Icons.lock, color: theme.disabledColor, size: 24),
             ],
           ),
         ),
@@ -222,11 +209,11 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     );
   }
 
-  Widget _buildBottomNavBar() {
+  Widget _buildBottomNavBar(ThemeData theme) {
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -237,16 +224,21 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       ),
       child: Row(
         children: [
-          _buildNavItem(Icons.layers, "Niveles", true),
-          _buildNavItem(Icons.play_circle_outline, "Videos", false),
-          _buildNavItem(Icons.games, "Juegos", false),
-          _buildNavItem(Icons.trending_up, "Progreso", false),
+          _buildNavItem(Icons.layers, "Niveles", true, theme),
+          _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
+          _buildNavItem(Icons.games, "Juegos", false, theme),
+          _buildNavItem(Icons.trending_up, "Progreso", false, theme),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    ThemeData theme,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () => _onNavItemTap(label),
@@ -256,14 +248,18 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? Color(0xFF6a4c93) : Color(0xFF666666),
+              color:
+                  isSelected ? theme.colorScheme.primary : theme.disabledColor,
             ),
             SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? Color(0xFF6a4c93) : Color(0xFF666666),
+                color:
+                    isSelected
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
               ),
             ),
           ],
@@ -276,18 +272,20 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     setState(() {
       _isModalVisible = !_isModalVisible;
     });
-    
+
     if (_isModalVisible) {
       _showProfileModal();
     }
   }
 
   void _showProfileModal() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: theme.cardColor,
           contentPadding: EdgeInsets.all(20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -300,7 +298,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                     _abrirEditarPerfil();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF6a4c93),
+                    backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -360,21 +358,33 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
   void _abrirPantallaProgreso() {
     print("Abriendo pantalla de progreso...");
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaProgreso()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaProgreso()),
+    );
   }
 
   void _abrirPantallaJuegos() {
     print("Abriendo pantalla de juegos...");
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaJuegos()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaJuegos()),
+    );
   }
 
   void _abrirPantallaVideos() {
     print("Abriendo pantalla de videos...");
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaVideos()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaVideos()),
+    );
   }
 
   void _abrirEditarPerfil() {
     print("Abriendo editar perfil...");
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaPerfil()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaPerfil()),
+    );
   }
 }
