@@ -374,7 +374,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: SizedBox(
           height: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
