@@ -1,3 +1,4 @@
+import 'package:OratioLingo/screens/verificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/juegos.dart';
 import 'package:OratioLingo/screens/login.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
           routes: {
             '/login': (context) => const LoginScreen(),
             '/registrarme': (context) => const RegistrarmeScreen(),
+            '/verificacion': (context) => const VerificacionScreen(),
             '/niveles': (context) => const PantallaNiveles(),
             '/juegos': (context) => const PantallaJuegos(),
             '/videos': (context) => const PantallaVideos(),
