@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'theme_notifier.dart'; // <-- Importa el notifier
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'theme_notifier.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // <-- Descomenta esto
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PantallaPerfil extends StatefulWidget {
   const PantallaPerfil({super.key});
@@ -10,55 +11,176 @@ class PantallaPerfil extends StatefulWidget {
 }
 
 class _PantallaPerfilState extends State<PantallaPerfil> {
-  // Firebase Auth instance (comentado)
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance; // <-- Descomenta esto
 
   // Variables para los switches
   bool notificationsEnabled = true;
-  bool darkThemeEnabled = false;
 
-  // Variables para información del usuario (valores de ejemplo)
-  String username = "Poro Lolero";
-  String email = "test@correotest.cl";
-  String registrationDate = "Se unió por primera vez el 10 de febrero del 2020";
+  // Variables para información del usuario
+  String username = "";
+  String email = "";
+  String registrationDate = "";
 
   @override
   void initState() {
     super.initState();
-    // Cargar información del usuario
     _cargarInformacionUsuario();
   }
 
-  void _cargarInformacionUsuario() {
-    // Implementación con Firebase (comentado)
-    /*
+  Future<void> _cargarInformacionUsuario() async {
     final User? currentUser = _auth.currentUser;
     if (currentUser != null) {
+      // Leer datos de Firestore
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(currentUser.uid)
+              .get();
+
       setState(() {
-        username = currentUser.displayName ?? "Usuario";
+        username = doc.data()?['nombreUsuario'] ?? "Usuario";
         email = currentUser.email ?? "";
-        // registrationDate se puede obtener de Firestore o user.metadata.creationTime
+        registrationDate =
+            currentUser.metadata.creationTime != null
+                ? "Se unió por primera vez el ${currentUser.metadata.creationTime!.day}/${currentUser.metadata.creationTime!.month}/${currentUser.metadata.creationTime!.year}"
+                : "";
       });
     }
-    */
   }
 
-  void _cerrarSesion() {
-    // Implementación con Firebase (comentado)
-    /*
-    _auth.signOut().then((_) {
-      Navigator.pushReplacementNamed(context, '/main');
-    });
-    */
-
-    // Implementación temporal sin Firebase
-    Navigator.pushReplacementNamed(context, '/main');
+  void _cerrarSesion() async {
+    await _auth.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
-  void _editarPerfil() {
-    // Implementar navegación a pantalla de edición de perfil
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función de editar perfil no implementada')),
+  void _editarPerfil() async {
+    final User? currentUser = _auth.currentUser;
+    if (currentUser == null) return;
+
+    // Obtén los datos actuales de Firestore
+    final doc =
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(currentUser.uid)
+            .get();
+    final data = doc.data() ?? {};
+
+    final nombreController = TextEditingController(text: data['nombre'] ?? '');
+    final nombreUsuarioController = TextEditingController(
+      text: data['nombreUsuario'] ?? '',
+    );
+    final descripcionController = TextEditingController(
+      text: data['descripcion'] ?? '',
+    );
+    final telefonoController = TextEditingController(
+      text: data['numeroTelefono'] ?? '',
+    );
+    DateTime? fechaNacimiento =
+        (data['fechaNacimiento'] != null)
+            ? (data['fechaNacimiento'] as Timestamp).toDate()
+            : null;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setState) => AlertDialog(
+                title: const Text('Editar perfil'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nombreController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre completo',
+                        ),
+                      ),
+                      TextField(
+                        controller: nombreUsuarioController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre de usuario',
+                        ),
+                      ),
+                      TextField(
+                        controller: descripcionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Descripción',
+                        ),
+                      ),
+                      TextField(
+                        controller: telefonoController,
+                        decoration: const InputDecoration(
+                          labelText: 'Teléfono',
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text('Fecha de nacimiento: '),
+                          Text(
+                            fechaNacimiento != null
+                                ? "${fechaNacimiento!.day}/${fechaNacimiento!.month}/${fechaNacimiento!.year}"
+                                : "No seleccionada",
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.calendar_today),
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: fechaNacimiento ?? DateTime(2000),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  fechaNacimiento = picked;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Actualiza en Firestore
+                      await FirebaseFirestore.instance
+                          .collection('usuarios')
+                          .doc(currentUser.uid)
+                          .update({
+                            'nombre': nombreController.text.trim(),
+                            'nombreUsuario':
+                                nombreUsuarioController.text.trim(),
+                            'descripcion': descripcionController.text.trim(),
+                            'numeroTelefono': telefonoController.text.trim(),
+                            'fechaNacimiento': fechaNacimiento,
+                          });
+                      // Opcional: actualiza displayName en Auth
+                      await currentUser.updateDisplayName(
+                        nombreController.text.trim(),
+                      );
+                      // Actualiza en pantalla
+                      setState(() {
+                        username = nombreUsuarioController.text.trim();
+                      });
+                      if (mounted) Navigator.pop(context);
+                    },
+                    child: const Text('Guardar'),
+                  ),
+                ],
+              ),
+        );
+      },
     );
   }
 
@@ -84,36 +206,76 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     Navigator.pushNamed(context, ruta);
   }
 
+  Future<void> _actualizarNombreUsuario(String nuevoNombre) async {
+    final User? currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(currentUser.uid)
+          .update({'nombreUsuario': nuevoNombre});
+      setState(() {
+        username = nuevoNombre;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          // Header con información del usuario
-          _buildHeader(),
+    final User? currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('No hay usuario autenticado')),
+      );
+    }
 
-          // Contenido principal
-          Expanded(
-            child: Stack(
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(currentUser.uid)
+              .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Scaffold(
+            body: Center(child: Text('No se encontraron datos de usuario')),
+          );
+        }
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final nombre = data['nombre'] ?? '';
+        final nombreUsuario = data['nombreUsuario'] ?? '';
+        final descripcion = data['descripcion'] ?? '';
+        final telefono = data['numeroTelefono'] ?? '';
+        final fechaNacimiento =
+            data['fechaNacimiento'] != null
+                ? (data['fechaNacimiento'] as Timestamp).toDate()
+                : null;
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Perfil')),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
               children: [
-                // Card con información
-                _buildContentCard(),
-
-                // Botón flotante de editar perfil
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _buildEditProfileButton(),
+                Text('Nombre: $nombre'),
+                Text('Nombre de usuario: $nombreUsuario'),
+                Text('Descripción: $descripcion'),
+                Text('Teléfono: $telefono'),
+                Text(
+                  'Fecha de nacimiento: ${fechaNacimiento != null ? "${fechaNacimiento.day}/${fechaNacimiento.month}/${fechaNacimiento.year}" : "No registrada"}',
                 ),
+                Text('Correo: ${currentUser.email ?? ""}'),
+                // ...otros widgets de tu perfil...
               ],
             ),
           ),
-
-          // Barra de navegación inferior
-          _buildBottomNavigation(),
-        ],
-      ),
+          // ...tu bottom navigation y otras acciones...
+        );
+      },
     );
   }
 
