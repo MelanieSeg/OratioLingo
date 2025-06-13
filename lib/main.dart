@@ -9,15 +9,31 @@ import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/theme_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:OratioLingo/firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
-}
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Request permissions on app start
+  await Permission.storage.request();
+  await Permission.camera.request();
+  await Permission.photos.request();
+
+  runApp(
+    MaterialApp(
+      home: FutureBuilder(
+        future: Future.delayed(Duration.zero),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return const MyApp();
+        },
+      ),
+    ),
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

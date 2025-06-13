@@ -1,4 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+Future<List<Map<String, dynamic>>> processVideos(
+  List<QueryDocumentSnapshot> docs,
+) {
+  return compute((docs) {
+    return docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+  }, docs);
+}
 
 class PantallaVideos extends StatefulWidget {
   const PantallaVideos({super.key});
@@ -7,9 +18,50 @@ class PantallaVideos extends StatefulWidget {
   State<PantallaVideos> createState() => _PantallaVideosState();
 }
 
-class _PantallaVideosState extends State<PantallaVideos> {
+class _PantallaVideosState extends State<PantallaVideos>
+    with AutomaticKeepAliveClientMixin {
+  final TextEditingController _searchController = TextEditingController();
+  final int _limit = 10;
+  DocumentSnapshot? _lastDocument;
+  bool _hasMore = true;
+  final List<DocumentSnapshot> _videos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _getVideos();
+  }
+
+  Future<void> _getVideos() async {
+    var query = FirebaseFirestore.instance
+        .collection('videos')
+        .orderBy('titulo')
+        .limit(_limit);
+
+    if (_lastDocument != null) {
+      query = query.startAfterDocument(_lastDocument!);
+    }
+
+    final snapshot = await query.get();
+    if (snapshot.docs.length < _limit) {
+      _hasMore = false;
+    }
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDocument = snapshot.docs.last;
+    }
+
+    setState(() {
+      _videos.addAll(snapshot.docs);
+    });
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -17,36 +69,14 @@ class _PantallaVideosState extends State<PantallaVideos> {
         child: Column(
           children: [
             _buildTopBar(theme),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: _buildSearchBar(theme),
+            ),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.video_library,
-                      size: 80,
-                      color: theme.colorScheme.primary,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Videos de Aprendizaje',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Próximamente: Contenido de videos\npara mejorar tu aprendizaje',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: theme.textTheme.bodyMedium?.color,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _buildVideosGrid(theme),
               ),
             ),
             _buildBottomNavBar(theme),
@@ -101,6 +131,116 @@ class _PantallaVideosState extends State<PantallaVideos> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchBar(ThemeData theme) {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Buscar videos...',
+        prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
+        filled: true,
+        fillColor: theme.cardColor,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: theme.colorScheme.primary),
+        ),
+      ),
+      onChanged: (value) {
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _buildVideosGrid(ThemeData theme) {
+    return GridView.builder(
+      itemCount: _videos.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.1,
+      ),
+      itemBuilder: (context, index) {
+        final data = _videos[index].data() as Map<String, dynamic>;
+        final titulo = data['titulo'] ?? '';
+        final imagen = data['imagen'] ?? '';
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 2,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              // Abrir el video usando data['url']
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child:
+                      imagen.isNotEmpty
+                          ? ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                            child: CachedNetworkImage(
+                              imageUrl: imagen,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => Icon(Icons.error),
+                            ),
+                          )
+                          : Container(
+                            decoration: BoxDecoration(
+                              color: theme.cardColor,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.play_circle_filled,
+                                color: theme.colorScheme.primary,
+                                size: 48,
+                              ),
+                            ),
+                          ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 8,
+                  ),
+                  child: Text(
+                    titulo,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
