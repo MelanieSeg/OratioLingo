@@ -1,3 +1,4 @@
+import 'package:OratioLingo/screens/verificacion.dart';
 import 'package:flutter/material.dart';
 import '../services/firestore_services.dart';
 
@@ -143,7 +144,12 @@ class _RegistroFormState extends State<_RegistroForm> {
               child: const Text('Entendido'),
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.pushReplacementNamed(context, '/verificacion');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const VerificacionScreen(),
+                  ),
+                );
               },
             ),
           ],
