@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../services/firestore_services.dart';
 
@@ -40,9 +42,17 @@ class LoginHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Logo de la aplicación
-        Image.asset(
-          'assets/images/logo.png', // Asegúrate de tener esta imagen
+        Container(
+          width: 100,
           height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            image: DecorationImage(
+              image: AssetImage('lib/assets/images/logo.png'),
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
         const SizedBox(height: 16),
         // Título de la aplicación
@@ -146,10 +156,7 @@ class _LoginFormState extends State<LoginForm> {
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
               labelText: 'Correo electrónico',
-              prefixIcon: Icon(Icons.email_outlined, 
-                color: Colors.grey,
-                
-              ),
+              prefixIcon: Icon(Icons.email_outlined, color: Colors.black),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 borderSide: BorderSide(color: Colors.grey, width: 1.0),
@@ -264,35 +271,6 @@ class LoginFooter extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
-
-        // Opciones de inicio de sesión con redes sociales
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialLoginButton(
-              icon: 'assets/images/google_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Google
-              },
-            ),
-            const SizedBox(width: 16),
-            _SocialLoginButton(
-              icon: 'assets/images/facebook_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Facebook
-              },
-            ),
-            const SizedBox(width: 16),
-            _SocialLoginButton(
-              icon: 'assets/images/apple_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Apple
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-
         // Opción para registro
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -312,35 +290,6 @@ class LoginFooter extends StatelessWidget {
         ),
         const SizedBox(height: 16),
       ],
-    );
-  }
-}
-
-// Widget auxiliar para los botones de inicio de sesión social
-class _SocialLoginButton extends StatelessWidget {
-  final String icon;
-  final VoidCallback onPressed;
-
-  // ignore: use_super_parameters
-  const _SocialLoginButton({
-    Key? key,
-    required this.icon,
-    required this.onPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: Image.asset(icon, height: 24, width: 24),
-      ),
     );
   }
 }

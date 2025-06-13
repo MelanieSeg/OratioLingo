@@ -1,4 +1,5 @@
 import 'package:OratioLingo/screens/juegos.dart';
+import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
@@ -350,10 +351,14 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   }
 
   void _cerrarSesion() {
-    // TODO: Implementar Firebase auth.signOut()
-    print("Cerrando sesión...");
+    FirestoreServices services = FirestoreServices();
+    services.cerrarSesion();
+
     // Navegar a pantalla de login
-    Navigator.pushReplacementNamed(context, '/login');
+    if (mounted) {
+      print("Cerrando sesión...");
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   void _abrirPantallaProgreso() {

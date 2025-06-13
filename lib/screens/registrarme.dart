@@ -98,6 +98,7 @@ class _RegistroFormState extends State<_RegistroForm> {
   // Mostrar selector de fecha
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
+      
       context: context,
       initialDate: _fechaNacimiento ?? DateTime(2000),
       firstDate: DateTime(1900),

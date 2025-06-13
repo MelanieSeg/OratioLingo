@@ -1,3 +1,4 @@
+import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:flutter/material.dart';
 import 'theme_notifier.dart'; // <-- Importa el notifier
 // import 'package:firebase_auth/firebase_auth.dart';
@@ -44,15 +45,14 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   }
 
   void _cerrarSesion() {
-    // Implementación con Firebase (comentado)
-    /*
-    _auth.signOut().then((_) {
-      Navigator.pushReplacementNamed(context, '/main');
-    });
-    */
+    FirestoreServices services = FirestoreServices();
+    services.cerrarSesion();
 
-    // Implementación temporal sin Firebase
-    Navigator.pushReplacementNamed(context, '/main');
+    // Navegar a pantalla de login
+    if (mounted) {
+      print("Cerrando sesión...");
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   void _editarPerfil() {
