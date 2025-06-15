@@ -159,12 +159,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   }
 
   Future<void> _cambiarContrasena() async {
-    final _currentPasswordController = TextEditingController();
-    final _newPasswordController = TextEditingController();
-    final _confirmNewPasswordController = TextEditingController();
-    bool _obscureCurrentPassword = true;
-    bool _obscureNewPassword = true;
-    bool _obscureConfirmPassword = true;
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmNewPasswordController = TextEditingController();
+    bool obscureCurrentPassword = true;
+    bool obscureNewPassword = true;
+    bool obscureConfirmPassword = true;
 
     final scaffoldContext = context;
 
@@ -181,67 +181,67 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TextField(
-                          controller: _currentPasswordController,
-                          obscureText: _obscureCurrentPassword,
+                          controller: currentPasswordController,
+                          obscureText: obscureCurrentPassword,
                           decoration: InputDecoration(
                             labelText: 'Contraseña actual',
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscureCurrentPassword
+                                obscureCurrentPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
                               onPressed:
                                   () => setState(
                                     () =>
-                                        _obscureCurrentPassword =
-                                            !_obscureCurrentPassword,
+                                        obscureCurrentPassword =
+                                            !obscureCurrentPassword,
                                   ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         TextField(
-                          controller: _newPasswordController,
-                          obscureText: _obscureNewPassword,
+                          controller: newPasswordController,
+                          obscureText: obscureNewPassword,
                           decoration: InputDecoration(
                             labelText: 'Nueva contraseña',
                             border: const OutlineInputBorder(),
                             helperText: 'Mínimo 6 caracteres',
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscureNewPassword
+                                obscureNewPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
                               onPressed:
                                   () => setState(
                                     () =>
-                                        _obscureNewPassword =
-                                            !_obscureNewPassword,
+                                        obscureNewPassword =
+                                            !obscureNewPassword,
                                   ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         TextField(
-                          controller: _confirmNewPasswordController,
-                          obscureText: _obscureConfirmPassword,
+                          controller: confirmNewPasswordController,
+                          obscureText: obscureConfirmPassword,
                           decoration: InputDecoration(
                             labelText: 'Confirmar nueva contraseña',
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscureConfirmPassword
+                                obscureConfirmPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
                               onPressed:
                                   () => setState(
                                     () =>
-                                        _obscureConfirmPassword =
-                                            !_obscureConfirmPassword,
+                                        obscureConfirmPassword =
+                                            !obscureConfirmPassword,
                                   ),
                             ),
                           ),
@@ -257,9 +257,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     TextButton(
                       onPressed: () async {
                         // Validaciones básicas
-                        if (_currentPasswordController.text.isEmpty ||
-                            _newPasswordController.text.isEmpty ||
-                            _confirmNewPasswordController.text.isEmpty) {
+                        if (currentPasswordController.text.isEmpty ||
+                            newPasswordController.text.isEmpty ||
+                            confirmNewPasswordController.text.isEmpty) {
                           await _mostrarMensaje(
                             scaffoldContext,
                             'Por favor completa todos los campos',
@@ -268,8 +268,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                           return;
                         }
 
-                        if (_newPasswordController.text !=
-                            _confirmNewPasswordController.text) {
+                        if (newPasswordController.text !=
+                            confirmNewPasswordController.text) {
                           await _mostrarMensaje(
                             scaffoldContext,
                             'Las nuevas contraseñas no coinciden',
@@ -278,7 +278,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                           return;
                         }
 
-                        if (_newPasswordController.text.length < 6) {
+                        if (newPasswordController.text.length < 6) {
                           await _mostrarMensaje(
                             scaffoldContext,
                             'La nueva contraseña debe tener al menos 6 caracteres',
@@ -292,12 +292,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                           if (user != null) {
                             final credential = EmailAuthProvider.credential(
                               email: user.email!,
-                              password: _currentPasswordController.text,
+                              password: currentPasswordController.text,
                             );
 
                             await user.reauthenticateWithCredential(credential);
                             await user.updatePassword(
-                              _newPasswordController.text,
+                              newPasswordController.text,
                             );
 
                             Navigator.pop(dialogContext);

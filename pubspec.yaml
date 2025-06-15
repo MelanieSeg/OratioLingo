@@ -32,3 +32,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+  fonts:
+    - family: ChileanSignLanguage
+      fonts:
+        - asset: fonts/LenguaDeSenasChilenaHef-Regular.ttf

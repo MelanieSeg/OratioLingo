@@ -3,6 +3,7 @@ import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
+import 'package:OratioLingo/screens/nivel3.dart';
 
 class PantallaNiveles extends StatefulWidget {
   const PantallaNiveles({super.key});
@@ -132,25 +133,41 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     String? displayText,
     ThemeData theme,
   ) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: isCompleted ? theme.colorScheme.primary : theme.disabledColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child:
-            displayText != null
-                ? Text(
-                  displayText,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: displayText == "✓" ? 20 : 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-                : Icon(Icons.lock, color: Colors.white, size: 24),
+    return GestureDetector(
+      onTap: () {
+        // Solo permitir navegación si el nivel está desbloqueado (tiene displayText)
+        if (displayText != null) {
+          switch (number) {
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Nivel3Screen()),
+              );
+              break;
+            // Aquí puedes agregar más casos para otros niveles
+          }
+        }
+      },
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: isCompleted ? theme.colorScheme.primary : theme.disabledColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child:
+              displayText != null
+                  ? Text(
+                    displayText,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: displayText == "✓" ? 20 : 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                  : Icon(Icons.lock, color: Colors.white, size: 24),
+        ),
       ),
     );
   }

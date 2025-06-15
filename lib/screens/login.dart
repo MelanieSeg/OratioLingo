@@ -13,10 +13,10 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: const [
-              SizedBox(height: 40),
+              SizedBox(height: 30),
               // Encabezado del login
               LoginHeader(),
-              SizedBox(height: 40),
+              SizedBox(height: 10),
               // Formulario de login
               LoginForm(),
               SizedBox(height: 20),
@@ -56,7 +56,7 @@ class LoginHeader extends StatelessWidget {
         const SizedBox(height: 8),
         // Subtítulo o slogan
         Text(
-          'Aprende idiomas de forma natural',
+          'Aprende lenguaje de señas con nosotros',
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -146,10 +146,7 @@ class _LoginFormState extends State<LoginForm> {
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
               labelText: 'Correo electrónico',
-              prefixIcon: Icon(Icons.email_outlined, 
-                color: Colors.grey,
-                
-              ),
+              prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 borderSide: BorderSide(color: Colors.grey, width: 1.0),
