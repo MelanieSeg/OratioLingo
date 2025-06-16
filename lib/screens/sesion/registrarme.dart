@@ -1,6 +1,6 @@
-import 'package:OratioLingo/screens/verificacion.dart';
+import 'package:OratioLingo/screens/sesion/verificacion.dart';
 import 'package:flutter/material.dart';
-import '../services/firestore_services.dart';
+import '../../services/firestore_services.dart';
 
 class RegistrarmeScreen extends StatelessWidget {
   const RegistrarmeScreen({super.key});

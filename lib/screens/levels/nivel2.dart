@@ -1,0 +1,1822 @@
+import 'package:flutter/material.dart';
+import 'package:OratioLingo/screens/niveles.dart';
+import 'package:OratioLingo/services/niveles_services.dart';
+import 'dart:async';
+
+class Nivel2Screen extends StatefulWidget {
+  const Nivel2Screen({super.key});
+
+  @override
+  State<Nivel2Screen> createState() => _Nivel2ScreenState();
+}
+
+class _Nivel2ScreenState extends State<Nivel2Screen>
+    with TickerProviderStateMixin {
+  int ejercicioActual = 0;
+  int aciertos = 0;
+  int vidas = 3; // Sistema de vidas
+  int totalFallos = 0; // Contador total de fallos
+  final totalEjercicios = 5; // Solo F, G, H, I, J
+
+  // Controladores para animaciones
+  late AnimationController _progressController;
+  late AnimationController _feedbackController;
+  late AnimationController _shakeController;
+  late AnimationController _hintController;
+  late Animation<double> _progressAnimation;
+  late Animation<double> _feedbackAnimation;
+  late Animation<double> _shakeAnimation;
+  late Animation<double> _hintAnimation;
+
+  // Estados para cada ejercicio
+  Map<String, dynamic> estadoEmparejamiento = {
+    'parejas': [
+      {'senia': 'f', 'letra': 'F', 'emparejada': false, 'error': false},
+      {'senia': 'g', 'letra': 'G', 'emparejada': false, 'error': false},
+      {'senia': 'h', 'letra': 'H', 'emparejada': false, 'error': false},
+      {'senia': 'i', 'letra': 'I', 'emparejada': false, 'error': false},
+      {'senia': 'j', 'letra': 'J', 'emparejada': false, 'error': false},
+    ],
+    'parejasBarajadas': <Map<String, dynamic>>[],
+    'seleccionado': null,
+    'parejasCorrectas': 0,
+  };
+
+  Map<String, dynamic> estadoOrdenar = {
+    'senias': ['j', 'g', 'f', 'i', 'h'],
+    'orden': ['F', 'G', 'H', 'I', 'J'],
+    'ordenActual': <String>[],
+    'completado': false,
+    'slots': <Map<String, String>?>[
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    'error': false,
+  };
+
+  final TextEditingController _escribirController = TextEditingController();
+  String? _opcionSeleccionada;
+  bool _mostrandoFeedback = false;
+  bool _respuestaCorrecta = false;
+  
+  // Sistema de hints
+  bool _mostrandoHint = false;
+  String _hintActual = '';
+  Timer? _hintTimer;
+
+  final List<Map<String, dynamic>> ejercicios = [
+    {
+      'tipo': 'emparejar',
+      'titulo': 'Empareja las señas con sus letras',
+      'completado': false,
+    },
+    {
+      'tipo': 'seleccionMultiple',
+      'titulo': '¿Qué letra representa esta seña?',
+      'senia': 'g',
+      'opciones': ['F', 'G', 'H'],
+      'correcta': 'G',
+      'hint': 'El dedo índice apunta hacia el lado, formando una "G"',
+      'completado': false,
+    },
+    {
+      'tipo': 'ordenar',
+      'titulo': 'Organiza las señas en orden alfabético',
+      'senias': ['j', 'g', 'f', 'i', 'h'],
+      'orden': ['F', 'G', 'H', 'I', 'J'],
+      'completado': false,
+    },
+    {
+      'tipo': 'seleccionMultiple',
+      'titulo': '¿Cuál es la seña para la letra I?',
+      'senia': 'i',
+      'opciones': ['H', 'I', 'J'],
+      'correcta': 'I',
+      'hint': 'El dedo meñique se levanta, como una "I" pequeña',
+      'completado': false,
+    },
+    {
+      'tipo': 'escribir',
+      'titulo': 'Escribe la letra que representa esta seña',
+      'senia': 'h',
+      'respuesta': 'H',
+      'hint': 'Dos dedos juntos apuntan hacia el lado, como una "H"',
+      'completado': false,
+    },
+  ];
+
+  // Mapas de hints para las señas
+  final Map<String, String> hints = {
+    'f': 'Tres dedos juntos apuntan hacia arriba, el pulgar toca el índice',
+    'g': 'El dedo índice apunta hacia el lado, formando una "G"',
+    'h': 'Dos dedos juntos apuntan hacia el lado, como una "H"',
+    'i': 'El dedo meñique se levanta solo, como una "I" pequeña',
+    'j': 'El dedo meñique hace una "J" con un movimiento curvo',
+  };
+
+  final NivelesService _nivelesService = NivelesService();
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _feedbackController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _hintController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _progressAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+    );
+
+    _feedbackAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _feedbackController, curve: Curves.elasticOut),
+    );
+
+    _shakeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticOut),
+    );
+
+    _hintAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _hintController, curve: Curves.easeInOut),
+    );
+
+    _barajarCartasEmparejamiento();
+  }
+
+  void _barajarCartasEmparejamiento() {
+    List<Map<String, dynamic>> parejas = List.from(
+      estadoEmparejamiento['parejas'],
+    );
+
+    List<Map<String, dynamic>> senias = [];
+    List<Map<String, dynamic>> letras = [];
+
+    for (var pareja in parejas) {
+      senias.add({
+        'tipo': 'senia',
+        'contenido': pareja['senia'],
+        'id': 'senia_${pareja['senia']}',
+        'emparejada': false,
+        'error': false,
+        'letraCorrespondiente': pareja['letra'],
+      });
+      letras.add({
+        'tipo': 'letra',
+        'contenido': pareja['letra'],
+        'id': 'letra_${pareja['letra']}',
+        'emparejada': false,
+        'error': false,
+        'seniaCorrespondiente': pareja['senia'],
+      });
+    }
+
+    senias.shuffle();
+    letras.shuffle();
+
+    setState(() {
+      estadoEmparejamiento['senias'] = senias;
+      estadoEmparejamiento['letras'] = letras;
+    });
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    _feedbackController.dispose();
+    _shakeController.dispose();
+    _hintController.dispose();
+    _escribirController.dispose();
+    _hintTimer?.cancel();
+    super.dispose();
+  }
+
+  // Función para mostrar hint
+  void _mostrarHint(String senia) {
+    setState(() {
+      _hintActual = hints[senia] ?? 'Hint no disponible';
+      _mostrandoHint = true;
+    });
+    _hintController.forward();
+    
+    _hintTimer?.cancel();
+    _hintTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        _ocultarHint();
+      }
+    });
+  }
+
+  void _ocultarHint() {
+    _hintController.reverse().then((_) {
+      if (mounted) {
+        setState(() {
+          _mostrandoHint = false;
+        });
+      }
+    });
+  }
+
+  // Función para perder vida
+  void _perderVida() {
+    setState(() {
+      vidas--;
+      totalFallos++;
+    });
+
+    if (vidas <= 0) {
+      _mostrarDialogoGameOver();
+    }
+  }
+
+  void _mostrarDialogoGameOver() {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icono de derrota
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF4B4B),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.sentiment_dissatisfied,
+                color: Colors.white,
+                size: 50,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Título
+            Text(
+              '¡Se acabaron las vidas!',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+
+            // Descripción
+            Text(
+              'No te preocupes, puedes intentarlo de nuevo. ¡La práctica hace al maestro!',
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.textTheme.bodyMedium?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 25),
+
+            // Estadísticas
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        '$totalFallos',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF4B4B),
+                        ),
+                      ),
+                      Text(
+                        'Fallos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: theme.dividerColor,
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '$aciertos',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF58CC02),
+                        ),
+                      ),
+                      Text(
+                        'Aciertos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            // Botón volver
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1CB0F6),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Cierra el diálogo
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PantallaNiveles(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'VOLVER A NIVELES',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                // Barra de progreso mejorada estilo Duolingo
+                _buildProgressBar(theme),
+
+                // Contenido principal
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        // Cabecera con botón cerrar y vidas
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.close,
+                                size: 28,
+                                color: theme.iconTheme.color,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            // Contador de vidas estilo Duolingo con animación
+                            Row(
+                              children: List.generate(3, (index) {
+                                bool tieneVida = index < vidas;
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Icon(
+                                      Icons.favorite,
+                                      color: tieneVida ? Colors.red : Colors.grey[400],
+                                      size: 30,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Título del ejercicio actual
+                        Text(
+                          ejercicios[ejercicioActual]['titulo'],
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: theme.textTheme.bodyLarge?.color,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Contenido del ejercicio
+                        Expanded(
+                          child: _buildEjercicio(
+                            ejercicios[ejercicioActual],
+                            theme,
+                          ),
+                        ),
+
+                        // Feedback y botón continuar
+                        _buildFeedbackYBoton(theme),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Overlay de hint
+            if (_mostrandoHint)
+              AnimatedBuilder(
+                animation: _hintAnimation,
+                builder: (context, child) {
+                  return Positioned(
+                    top: 100 + (50 * (1 - _hintAnimation.value)),
+                    left: 20,
+                    right: 20,
+                    child: Opacity(
+                      opacity: _hintAnimation.value,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1CB0F6),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.lightbulb,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _hintActual,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressBar(ThemeData theme) {
+    return Container(
+      height: 10,
+      margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      child: Stack(
+        children: [
+          Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? theme.dividerColor
+                  : const Color.fromARGB(255, 187, 185, 189),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _progressAnimation,
+            builder: (context, child) {
+              double progress =
+                  (ejercicioActual +
+                      (_respuestaCorrecta && _mostrandoFeedback ? 1 : 0)) /
+                  totalEjercicios;
+              return FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progress,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEjercicio(Map<String, dynamic> ejercicio, ThemeData theme) {
+    switch (ejercicio['tipo']) {
+      case 'emparejar':
+        return _buildEmparejamiento(theme);
+      case 'seleccionMultiple':
+        return _buildSeleccionMultiple(ejercicio, theme);
+      case 'ordenar':
+        return _buildOrdenar(ejercicio, theme);
+      case 'escribir':
+        return _buildEscribir(ejercicio, theme);
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildEmparejamiento(ThemeData theme) {
+    return Column(
+      children: [
+        Text(
+          'Toca las cartas para emparejarlas',
+          style: TextStyle(
+            fontSize: 16,
+            color: theme.textTheme.bodyMedium?.color,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '${estadoEmparejamiento['parejasCorrectas']} de 5 parejas',
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        Expanded(
+          child: Row(
+            children: [
+              // Columna de señas
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      'Señas',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: ListView.separated(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: estadoEmparejamiento['parejas'].length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final carta = estadoEmparejamiento['senias'][index];
+                          return _buildCartaEmparejamiento(
+                            carta['id'],
+                            carta['contenido'],
+                            carta['emparejada'],
+                            carta['error'],
+                            true,
+                            theme,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 20),
+
+              // Columna de letras
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      'Letras',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: ListView.separated(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: estadoEmparejamiento['parejas'].length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final carta = estadoEmparejamiento['letras'][index];
+                          return _buildCartaEmparejamiento(
+                            carta['id'],
+                            carta['contenido'],
+                            carta['emparejada'],
+                            carta['error'],
+                            false,
+                            theme,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCartaEmparejamiento(
+    String id,
+    String contenido,
+    bool emparejada,
+    bool error,
+    bool esSenia,
+    ThemeData theme,
+  ) {
+    bool seleccionado = estadoEmparejamiento['seleccionado'] == id;
+
+    Color backgroundColor;
+    Color borderColor;
+    Color textColor;
+
+    if (emparejada) {
+      backgroundColor = const Color(0xFF58CC02);
+      borderColor = const Color(0xFF58CC02);
+      textColor = Colors.white;
+    } else if (error) {
+      backgroundColor = const Color(0xFFFF4B4B);
+      borderColor = const Color(0xFFFF4B4B);
+      textColor = Colors.white;
+    } else if (seleccionado) {
+      backgroundColor = const Color(0xFF1CB0F6);
+      borderColor = const Color(0xFF1CB0F6);
+      textColor = Colors.white;
+    } else {
+      backgroundColor = theme.cardColor;
+      borderColor = theme.dividerColor;
+      textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    }
+
+    return GestureDetector(
+      onTap: (emparejada || error) ? null : () => _seleccionarCarta(id),
+      onLongPress: esSenia ? () => _mostrarHint(contenido) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 90,
+        height: 65,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(color: borderColor, width: 2),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: emparejada
+              ? const Icon(Icons.check, color: Colors.white, size: 32)
+              : error
+              ? const Icon(Icons.close, color: Colors.white, size: 32)
+              : Text(
+                contenido,
+                style: TextStyle(
+                  fontFamily: esSenia ? 'ChileanSignLanguage' : null,
+                  fontSize: esSenia ? 40 : 32,
+                  fontWeight: esSenia ? FontWeight.normal : FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+        ),
+      ),
+    );
+  }
+
+  void _seleccionarCarta(String carta) {
+    setState(() {
+      if (estadoEmparejamiento['seleccionado'] == null) {
+        estadoEmparejamiento['seleccionado'] = carta;
+      } else {
+        String primeraCarta = estadoEmparejamiento['seleccionado'];
+        estadoEmparejamiento['seleccionado'] = null;
+
+        if (_esParejaCorrecto(primeraCarta, carta)) {
+          _marcarParejaCorrecta(primeraCarta, carta);
+          estadoEmparejamiento['parejasCorrectas']++;
+
+          if (estadoEmparejamiento['parejasCorrectas'] == 5) {
+            _verificarRespuesta(true);
+          }
+        } else {
+          _marcarError(primeraCarta, carta);
+          _perderVida(); // Perder vida por error
+          _shakeController.forward().then((_) {
+            _shakeController.reset();
+            Future.delayed(const Duration(milliseconds: 800), () {
+              if (mounted) {
+                setState(() {
+                  _limpiarErrores();
+                });
+              }
+            });
+          });
+        }
+      }
+    });
+  }
+
+  void _marcarError(String carta1, String carta2) {
+    for (var senia in estadoEmparejamiento['senias']) {
+      if (senia['id'] == carta1 || senia['id'] == carta2) {
+        senia['error'] = true;
+      }
+    }
+
+    for (var letra in estadoEmparejamiento['letras']) {
+      if (letra['id'] == carta1 || letra['id'] == carta2) {
+        letra['error'] = true;
+      }
+    }
+
+    _shakeController.forward();
+  }
+
+  void _limpiarErrores() {
+    for (var senia in estadoEmparejamiento['senias']) {
+      senia['error'] = false;
+    }
+
+    for (var letra in estadoEmparejamiento['letras']) {
+      letra['error'] = false;
+    }
+  }
+
+  bool _esParejaCorrecto(String carta1, String carta2) {
+    Map<String, dynamic>? carta1Data;
+    Map<String, dynamic>? carta2Data;
+
+    for (var senia in estadoEmparejamiento['senias']) {
+      if (senia['id'] == carta1) carta1Data = senia;
+      if (senia['id'] == carta2) carta2Data = senia;
+    }
+
+    for (var letra in estadoEmparejamiento['letras']) {
+      if (letra['id'] == carta1) carta1Data = letra;
+      if (letra['id'] == carta2) carta2Data = letra;
+    }
+
+    if (carta1Data == null || carta2Data == null) return false;
+    if (carta1Data['tipo'] == carta2Data['tipo']) return false;
+
+    if (carta1Data['tipo'] == 'senia' && carta2Data['tipo'] == 'letra') {
+      return carta1Data['letraCorrespondiente'] == carta2Data['contenido'];
+    } else if (carta1Data['tipo'] == 'letra' && carta2Data['tipo'] == 'senia') {
+      return carta1Data['seniaCorrespondiente'] == carta2Data['contenido'];
+    }
+
+    return false;
+  }
+
+  void _marcarParejaCorrecta(String carta1, String carta2) {
+    for (var senia in estadoEmparejamiento['senias']) {
+      if (senia['id'] == carta1 || senia['id'] == carta2) {
+        senia['emparejada'] = true;
+      }
+    }
+
+    for (var letra in estadoEmparejamiento['letras']) {
+      if (letra['id'] == carta1 || letra['id'] == carta2) {
+        letra['emparejada'] = true;
+      }
+    }
+  }
+
+  Widget _buildSeleccionMultiple(
+    Map<String, dynamic> ejercicio,
+    ThemeData theme,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Seña grande con hint al mantener presionado
+          GestureDetector(
+            onLongPress: () => _mostrarHint(ejercicio['senia']),
+            child: Container(
+              width: 200,
+              height: 150,
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.dividerColor, width: 2),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(
+                      ejercicio['senia'],
+                      style: const TextStyle(
+                        fontFamily: 'ChileanSignLanguage',
+                        fontSize: 100,
+                      ),
+                    ),
+                  ),
+                  // Indicador de hint
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1CB0F6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.help_outline,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+          
+          // Instrucción para hint
+          Text(
+            'Mantén presionado para ver una pista',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Opciones
+          ...ejercicio['opciones'].map<Widget>((opcion) {
+            bool seleccionada = _opcionSeleccionada == opcion;
+            Color backgroundColor;
+            Color borderColor;
+            Color textColor;
+
+            if (seleccionada && _mostrandoFeedback) {
+              if (_respuestaCorrecta) {
+                backgroundColor = const Color(0xFF58CC02);
+                borderColor = const Color(0xFF58CC02);
+                textColor = Colors.white;
+              } else {
+                backgroundColor = const Color(0xFFFF4B4B);
+                borderColor = const Color(0xFFFF4B4B);
+                textColor = Colors.white;
+              }
+            } else if (seleccionada) {
+              backgroundColor = const Color(0xFF1CB0F6);
+              borderColor = const Color(0xFF1CB0F6);
+              textColor = Colors.white;
+            } else {
+              backgroundColor = theme.cardColor;
+              borderColor = theme.dividerColor;
+              textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 70),
+                    backgroundColor: backgroundColor,
+                    foregroundColor: textColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: borderColor, width: 2),
+                    ),
+                  ),
+                  onPressed: _mostrandoFeedback
+                      ? null
+                      : () {
+                        setState(() {
+                          _opcionSeleccionada = opcion;
+                        });
+                        bool esCorrecta = opcion == ejercicio['correcta'];
+                        if (!esCorrecta) {
+                          _perderVida();
+                        }
+                        _verificarRespuesta(esCorrecta);
+                      },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        opcion,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (seleccionada && _mostrandoFeedback)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15),
+                          child: Icon(
+                            _respuestaCorrecta ? Icons.check : Icons.close,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrdenar(Map<String, dynamic> ejercicio, ThemeData theme) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) {
+        double shake = estadoOrdenar['error']
+            ? _shakeAnimation.value * 10 * (1 - _shakeAnimation.value)
+            : 0;
+
+        return Transform.translate(
+          offset: Offset(shake, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Área de slots específicos
+                Container(
+                  height: 100,
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(vertical: 20),
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: estadoOrdenar['error']
+                        ? const Color(0xFFFFEBEE)
+                        : theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: estadoOrdenar['error']
+                          ? const Color(0xFFFF4B4B)
+                          : theme.dividerColor,
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(5, (index) {
+                      return DragTarget<Map<String, String>>(
+                        onAcceptWithDetails: (details) {
+                          final data = details.data;
+                          setState(() {
+                            if (estadoOrdenar['slots'][index] != null) {
+                              return;
+                            }
+
+                            int oldIndex = -1;
+                            for (int i = 0; i < estadoOrdenar['slots'].length; i++) {
+                              var slot = estadoOrdenar['slots'][i];
+                              if (slot != null && slot['senia'] == data['senia']) {
+                                oldIndex = i;
+                                break;
+                              }
+                            }
+
+                            if (oldIndex != -1) {
+                              estadoOrdenar['slots'][oldIndex] = null;
+                            }
+
+                            estadoOrdenar['slots'][index] = data;
+                            estadoOrdenar['error'] = false;
+
+                            bool allFilled = estadoOrdenar['slots'].every(
+                              (slot) => slot != null,
+                            );
+
+                            if (allFilled) {
+                              _verificarOrden();
+                            }
+                          });
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          bool hasContent = estadoOrdenar['slots'][index] != null;
+                          bool isHovering = candidateData.isNotEmpty;
+
+                          return Container(
+                            width: 60,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: hasContent
+                                  ? theme.cardColor
+                                  : isHovering
+                                  ? const Color(0xFF1CB0F6).withOpacity(0.2)
+                                  : theme.cardColor,
+                              border: Border.all(
+                                color: isHovering
+                                    ? const Color(0xFF1CB0F6)
+                                    : theme.dividerColor,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: hasContent
+                                ? GestureDetector(
+                                  onLongPress: () => _mostrarHint(estadoOrdenar['slots'][index]!['senia']!),
+                                  child: Center(
+                                    child: Text(
+                                      estadoOrdenar['slots'][index]!['senia']!,
+                                      style: const TextStyle(
+                                        fontFamily: 'ChileanSignLanguage',
+                                        fontSize: 30,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                : Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ),
+
+                if (estadoOrdenar['slots'].any((slot) => slot != null))
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        estadoOrdenar['slots'] = <Map<String, String>?>[
+                          null, null, null, null, null,
+                        ];
+                        estadoOrdenar['error'] = false;
+                      });
+                    },
+                    icon: const Icon(Icons.refresh, color: Color(0xFF1CB0F6)),
+                    label: const Text(
+                      'Reiniciar',
+                      style: TextStyle(
+                        color: Color(0xFF1CB0F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 10),
+
+                // Señas para arrastrar
+                Wrap(
+                  spacing: 15,
+                  runSpacing: 15,
+                  alignment: WrapAlignment.center,
+                  children: ejercicio['senias'].map<Widget>((senia) {
+                    Map<String, String> seniaData = {
+                      'senia': senia,
+                      'letra': _seniaALetra(senia),
+                    };
+                    bool yaUsada = estadoOrdenar['slots'].any(
+                      (slot) => slot != null && slot['senia'] == senia,
+                    );
+
+                    return Draggable<Map<String, String>>(
+                      data: seniaData,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1CB0F6),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              senia,
+                              style: const TextStyle(
+                                fontFamily: 'ChileanSignLanguage',
+                                fontSize: 25,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Container(
+                        width: 70,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          color: theme.disabledColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: GestureDetector(
+                        onLongPress: () => _mostrarHint(senia),
+                        child: AnimatedOpacity(
+                          opacity: yaUsada ? 0.3 : 1.0,
+                          duration: const Duration(milliseconds: 300),
+                          child: Container(
+                            width: 90,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: theme.cardColor,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: theme.dividerColor,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                senia,
+                                style: const TextStyle(
+                                  fontFamily: 'ChileanSignLanguage',
+                                  fontSize: 40,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _verificarOrden() {
+    bool ordenCorrecto = true;
+    for (int i = 0; i < estadoOrdenar['slots'].length; i++) {
+      if (estadoOrdenar['slots'][i] == null ||
+          estadoOrdenar['slots'][i]!['letra'] !=
+              ejercicios[ejercicioActual]['orden'][i]) {
+        ordenCorrecto = false;
+        break;
+      }
+    }
+
+    if (ordenCorrecto) {
+      _verificarRespuesta(true);
+    } else {
+      _perderVida(); // Perder vida por orden incorrecto
+      setState(() {
+        estadoOrdenar['error'] = true;
+      });
+      _shakeController.forward().then((_) {
+        _shakeController.reset();
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            setState(() {
+              estadoOrdenar['error'] = false;
+            });
+          }
+        });
+      });
+    }
+  }
+
+  String _seniaALetra(String senia) {
+    const Map<String, String> conversion = {
+      'f': 'F',
+      'g': 'G',
+      'h': 'H',
+      'i': 'I',
+      'j': 'J',
+    };
+    return conversion[senia] ?? senia.toUpperCase();
+  }
+
+  Widget _buildEscribir(Map<String, dynamic> ejercicio, ThemeData theme) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Seña grande con hint
+          GestureDetector(
+            onLongPress: () => _mostrarHint(ejercicio['senia']),
+            child: Container(
+              width: 200,
+              height: 150,
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: theme.dividerColor, width: 2),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(
+                      ejercicio['senia'],
+                      style: const TextStyle(
+                        fontFamily: 'ChileanSignLanguage',
+                        fontSize: 100,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1CB0F6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.help_outline,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+          
+          Text(
+            'Mantén presionado para ver una pista',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _escribirController,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: theme.dividerColor, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF1CB0F6),
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: theme.cardColor,
+                hintText: 'Escribe aquí...',
+                hintStyle: TextStyle(
+                  fontSize: 20,
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+              ),
+              onSubmitted: (valor) {
+                bool esCorrecta = valor.toUpperCase() == ejercicio['respuesta'];
+                if (!esCorrecta) {
+                  _perderVida();
+                }
+                _verificarRespuesta(esCorrecta);
+              },
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF58CC02),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: _escribirController.text.isEmpty
+                  ? null
+                  : () {
+                    bool esCorrecta = _escribirController.text.toUpperCase() == ejercicio['respuesta'];
+                    if (!esCorrecta) {
+                      _perderVida();
+                    }
+                    _verificarRespuesta(esCorrecta);
+                  },
+              child: const Text(
+                'COMPROBAR',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackYBoton(ThemeData theme) {
+    if (!_mostrandoFeedback) return const SizedBox(height: 80);
+
+    return AnimatedBuilder(
+      animation: _feedbackAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _feedbackAnimation.value,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.only(top: 20),
+            decoration: BoxDecoration(
+              color: _respuestaCorrecta
+                  ? const Color(0xFFD7FFB8)
+                  : const Color(0xFFFFE6E6),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _respuestaCorrecta
+                    ? const Color(0xFF58CC02)
+                    : const Color(0xFFFF4B4B),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _respuestaCorrecta
+                            ? const Color(0xFF58CC02)
+                            : const Color(0xFFFF4B4B),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _respuestaCorrecta ? Icons.check : Icons.close,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Text(
+                      _respuestaCorrecta
+                          ? '¡Excelente!'
+                          : '¡Respuesta incorrecta!',
+                      style: TextStyle(
+                        color: _respuestaCorrecta
+                            ? const Color(0xFF58CC02)
+                            : const Color(0xFFFF4B4B),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_respuestaCorrecta) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF58CC02),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: _continuarSiguienteEjercicio,
+                      child: const Text(
+                        'CONTINUAR',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _verificarRespuesta(bool correcta) {
+    if (vidas <= 0) return; // No procesar si no hay vidas
+
+    setState(() {
+      _mostrandoFeedback = true;
+      _respuestaCorrecta = correcta;
+    });
+
+    _feedbackController.forward();
+
+    if (correcta) {
+      setState(() {
+        ejercicios[ejercicioActual]['completado'] = true;
+        aciertos++;
+      });
+      _progressController.animateTo((ejercicioActual + 1) / totalEjercicios);
+    } else {
+      // Resetear estado si es incorrecto
+      if (ejercicios[ejercicioActual]['tipo'] == 'escribir') {
+        _escribirController.clear();
+      } else if (ejercicios[ejercicioActual]['tipo'] == 'ordenar') {
+        setState(() {
+          estadoOrdenar['slots'] = <Map<String, String>?>[
+            null, null, null, null, null,
+          ];
+        });
+      } else if (ejercicios[ejercicioActual]['tipo'] == 'seleccionMultiple') {
+        setState(() {
+          _opcionSeleccionada = null;
+        });
+      }
+
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _mostrandoFeedback = false;
+          });
+          _feedbackController.reset();
+        }
+      });
+    }
+  }
+
+  void _continuarSiguienteEjercicio() {
+    setState(() {
+      _mostrandoFeedback = false;
+      _opcionSeleccionada = null;
+      _escribirController.clear();
+    });
+    _feedbackController.reset();
+
+    if (ejercicioActual < totalEjercicios - 1) {
+      setState(() {
+        ejercicioActual++;
+      });
+    } else {
+      _mostrarDialogoFinalizacion();
+    }
+  }
+
+  void _mostrarDialogoFinalizacion() {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: Color(0xFF58CC02),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_events,
+                color: Colors.white,
+                size: 50,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              '¡Lección completada!',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+
+            Text(
+              'Has practicado las letras F, G, H, I y J',
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.textTheme.bodyMedium?.color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 25),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        '$aciertos/$totalEjercicios',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF58CC02),
+                        ),
+                      ),
+                      Text(
+                        'Aciertos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: theme.dividerColor,
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '$vidas',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF4B4B),
+                        ),
+                      ),
+                      Text(
+                        'Vidas restantes',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            // Botón con loading mientras se guarda el progreso
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF58CC02),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: () => _completarNivelYContinuar(context),
+                child: const Text(
+                  'CONTINUAR',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Método para completar nivel y guardar progreso
+  Future<void> _completarNivelYContinuar(BuildContext context) async {
+    try {
+      // Mostrar loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF58CC02)),
+          ),
+        ),
+      );
+
+      // Guardar progreso en Firestore
+      bool exito = await _nivelesService.completarNivel(
+        numeroNivel: 2, // Nivel 2
+        aciertos: aciertos,
+        totalEjercicios: totalEjercicios,
+        vidasRestantes: vidas,
+        fallosTotales: totalFallos,
+      );
+
+      // Cerrar loading
+      Navigator.pop(context);
+      
+      if (exito) {
+        // Mostrar mensaje de éxito y nivel desbloqueado
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    '¡Nivel 2 completado! Nivel 3 desbloqueado',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF58CC02),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Cerrar diálogos y volver a niveles
+        Navigator.pop(context); // Cierra diálogo de finalización
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PantallaNiveles(),
+          ),
+        );
+      } else {
+        // Error al guardar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Error al guardar progreso. Inténtalo de nuevo.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      // Cerrar loading si está abierto
+      Navigator.pop(context);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+}

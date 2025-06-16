@@ -1,15 +1,21 @@
-import 'package:OratioLingo/screens/verificacion.dart';
+import 'package:OratioLingo/screens/levels/nivel1.dart';
+import 'package:OratioLingo/screens/levels/nivel2.dart';
+import 'package:OratioLingo/screens/levels/nivel3.dart';
+import 'package:OratioLingo/screens/sesion/change-password.dart';
+import 'package:OratioLingo/screens/sesion/verificacion.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/juegos.dart';
-import 'package:OratioLingo/screens/login.dart';
+import 'package:OratioLingo/screens/sesion/login.dart';
 import 'package:OratioLingo/screens/perfil.dart';
-import 'package:OratioLingo/screens/registrarme.dart';
+import 'package:OratioLingo/screens/sesion/registrarme.dart';
 import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/theme_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:OratioLingo/screens/progreso.dart';
 import 'package:OratioLingo/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:OratioLingo/screens/sesion/forgot-password.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,12 +70,29 @@ class MyApp extends StatelessWidget {
             '/login': (context) => const LoginScreen(),
             '/registrarme': (context) => const RegistrarmeScreen(),
             '/verificacion': (context) => const VerificacionScreen(),
+            '/forgot-password': (context) => const ForgotPasswordScreen(),
             '/niveles': (context) => const PantallaNiveles(),
+            '/nivel1': (context) => const Nivel1Screen(),
+            '/nivel2': (context) => const Nivel2Screen(),
+            '/nivel3': (context) => const Nivel3Screen(),
             '/juegos': (context) => const PantallaJuegos(),
             '/videos': (context) => const PantallaVideos(),
-            '/progreso': (context) => const PantallaProgreso(),
             '/perfil': (context) => const PantallaPerfil(),
+            '/progreso': (context) => const PantallaProgreso(),
           },
+
+          // Manejar rutas con argumentos
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/change-password':
+            final email = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => ChangePasswordScreen(email: email),
+            );
+          default:
+            return null;
+        }
+      },
         );
       },
     );

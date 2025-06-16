@@ -1,3 +1,4 @@
+import 'package:OratioLingo/screens/progreso.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/perfil.dart';
@@ -283,15 +284,4 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
   }
 }
 
-// Placeholder para las otras pantallas (puedes eliminar esto cuando tengas las pantallas reales)
-class PantallaProgreso extends StatelessWidget {
-  const PantallaProgreso({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Progreso")),
-      body: Center(child: Text("Pantalla de Progreso")),
-    );
-  }
-}
