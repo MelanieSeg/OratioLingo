@@ -10,6 +10,7 @@ import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/sesion/registrarme.dart';
 import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/videos.dart';
+import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/theme_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:OratioLingo/screens/progreso.dart';
@@ -83,6 +84,8 @@ class MyApp extends StatelessWidget {
             '/nivel1': (context) => const Nivel1Screen(),
             '/nivel2': (context) => const Nivel2Screen(),
             '/nivel3': (context) => const Nivel3Screen(),
+            '/diccionario':
+                (context) => const PantallaDiccionario(), // Nueva ruta
             '/juegos': (context) => const PantallaJuegos(),
             '/videos': (context) => const PantallaVideos(),
             '/perfil': (context) => const PantallaPerfil(),

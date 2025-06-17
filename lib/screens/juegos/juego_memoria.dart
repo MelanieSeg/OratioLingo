@@ -8,20 +8,12 @@ class JuegoMemoria extends StatefulWidget {
   State<JuegoMemoria> createState() => _JuegoMemoriaState();
 }
 
-class _JuegoMemoriaState extends State<JuegoMemoria>
-    with TickerProviderStateMixin {
-  // Controladores de animación
-  late AnimationController _flipController;
-  late AnimationController _matchController;
-  late AnimationController _shakeController;
-  late Animation<double> _matchAnimation;
-  late Animation<double> _shakeAnimation;
-
-  // Estados del juego
+class _JuegoMemoriaState extends State<JuegoMemoria> {
+  // Estados del juego simplificados
   List<Map<String, dynamic>> cartas = [];
   int? primerCartaIndex;
   int? segundoCartaIndex;
-  bool procesandoComparacion = false;
+  bool bloqueado = false; // Simple flag en lugar de procesandoComparacion
   int parejasEncontradas = 0;
   int movimientos = 0;
   int puntuacion = 1000;
@@ -40,31 +32,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
   @override
   void initState() {
     super.initState();
-    _initAnimations();
     _inicializarJuego();
-  }
-
-  void _initAnimations() {
-    _flipController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _matchController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    // No necesitamos mantener _flipAnimation si no la usamos
-    _matchAnimation = Tween<double>(begin: 1, end: 1.2).animate(
-      CurvedAnimation(parent: _matchController, curve: Curves.elasticOut),
-    );
-    _shakeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _shakeController, curve: Curves.elasticOut),
-    );
   }
 
   void _inicializarJuego() {
@@ -97,23 +65,17 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
     // Mezclar las cartas
     cartas.shuffle(Random());
 
-    setState(() {
-      parejasEncontradas = 0;
-      movimientos = 0;
-      puntuacion = 1000;
-      juegoTerminado = false;
-      primerCartaIndex = null;
-      segundoCartaIndex = null;
-      procesandoComparacion = false;
-    });
-  }
-
-  @override
-  void dispose() {
-    _flipController.dispose();
-    _matchController.dispose();
-    _shakeController.dispose();
-    super.dispose();
+    if (mounted) {
+      setState(() {
+        parejasEncontradas = 0;
+        movimientos = 0;
+        puntuacion = 1000;
+        juegoTerminado = false;
+        primerCartaIndex = null;
+        segundoCartaIndex = null;
+        bloqueado = false;
+      });
+    }
   }
 
   @override
@@ -178,9 +140,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(
-              26,
-            ), // Reemplazado withOpacity por withAlpha
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -254,36 +214,24 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
   Widget _buildGameGrid(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Grid responsivo basado en el ancho disponible
-          int crossAxisCount = 3;
-          if (constraints.maxWidth > 600) {
-            crossAxisCount = 4;
-          } else if (constraints.maxWidth > 400) {
-            crossAxisCount = 3;
-          } else {
-            crossAxisCount = 3; // Mínimo 3 columnas para 12 cartas
-          }
-
-          return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: cartas.length,
-            itemBuilder: (context, index) {
-              return _buildCard(index, theme);
-            },
-          );
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: cartas.length,
+        itemBuilder: (context, index) {
+          return _buildCard(index, theme);
         },
       ),
     );
   }
 
   Widget _buildCard(int index, ThemeData theme) {
+    if (index >= cartas.length) return const SizedBox();
+
     final carta = cartas[index];
     final bool mostrarContenido = carta['volteada'] || carta['emparejada'];
     final bool esSeleccionada =
@@ -291,51 +239,26 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
 
     return GestureDetector(
       onTap: () => _voltearCarta(index),
-      child: AnimatedBuilder(
-        animation: Listenable.merge([_shakeAnimation, _matchAnimation]),
-        builder: (context, child) {
-          double shake = 0;
-          double scale = 1;
-
-          if (esSeleccionada && procesandoComparacion) {
-            if (carta['emparejada']) {
-              scale = 1 + (_matchAnimation.value - 1) * 0.3;
-            } else {
-              shake = _shakeAnimation.value * 5 * (1 - _shakeAnimation.value);
-            }
-          }
-
-          return Transform.translate(
-            offset: Offset(shake, 0),
-            child: Transform.scale(
-              scale: scale,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                decoration: BoxDecoration(
-                  color: _getCardColor(carta, theme),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _getBorderColor(carta, esSeleccionada, theme),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(
-                        26,
-                      ), // Reemplazado withOpacity por withAlpha
-                      blurRadius: carta['emparejada'] ? 12 : 6,
-                      offset: Offset(0, carta['emparejada'] ? 6 : 3),
-                    ),
-                  ],
-                ),
-                child:
-                    mostrarContenido
-                        ? _buildCardContent(carta, theme)
-                        : _buildCardBack(theme),
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _getCardColor(carta, theme),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _getBorderColor(carta, esSeleccionada, theme),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
-          );
-        },
+          ],
+        ),
+        child:
+            mostrarContenido
+                ? _buildCardContent(carta, theme)
+                : _buildCardBack(theme),
       ),
     );
   }
@@ -384,7 +307,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
           Expanded(
             child: Center(
               child: Text(
-                carta['contenido'],
+                carta['contenido']?.toString() ?? '?',
                 style: TextStyle(
                   fontFamily: esSenia ? 'ChileanSignLanguage' : null,
                   fontSize: esSenia ? 32 : 28,
@@ -402,9 +325,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.black.withAlpha(
-                51,
-              ), // Reemplazado withOpacity por withAlpha
+              color: Colors.black.withOpacity(0.2),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(14),
                 bottomRight: Radius.circular(14),
@@ -433,9 +354,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.primary,
-            theme.colorScheme.primary.withAlpha(
-              204,
-            ), // Reemplazado withOpacity por withAlpha
+            theme.colorScheme.primary.withOpacity(0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(14),
@@ -479,7 +398,8 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: parejasEncontradas < 6 ? _mostrarPista : null,
+              onPressed:
+                  parejasEncontradas < 6 && !bloqueado ? _mostrarPista : null,
             ),
           ),
         ],
@@ -488,7 +408,9 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
   }
 
   void _voltearCarta(int index) {
-    if (procesandoComparacion ||
+    // Validaciones básicas
+    if (bloqueado ||
+        index >= cartas.length ||
         cartas[index]['volteada'] ||
         cartas[index]['emparejada'] ||
         juegoTerminado) {
@@ -503,84 +425,71 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
       } else if (segundoCartaIndex == null) {
         segundoCartaIndex = index;
         movimientos++;
-        procesandoComparacion = true;
+        bloqueado = true; // Bloquear input durante verificación
 
         // Reducir puntuación por movimiento
         if (puntuacion > 50) {
           puntuacion -= 50;
         }
+
+        // Verificar pareja después de un breve delay
+        _verificarParejaSimple();
       }
     });
-
-    if (primerCartaIndex != null && segundoCartaIndex != null) {
-      _verificarPareja();
-    }
   }
 
-  void _verificarPareja() {
+  void _verificarParejaSimple() {
+    if (primerCartaIndex == null || segundoCartaIndex == null) {
+      _resetearSeleccion();
+      return;
+    }
+
     final carta1 = cartas[primerCartaIndex!];
     final carta2 = cartas[segundoCartaIndex!];
 
     // Verificar si forman pareja
-    bool esPareja =
-        (carta1['tipo'] == 'letra' &&
+    bool esPareja = _sonPareja(carta1, carta2);
+
+    // Esperar 1 segundo para que el usuario vea las cartas
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (!mounted) return;
+
+      setState(() {
+        if (esPareja) {
+          // Pareja correcta
+          cartas[primerCartaIndex!]['emparejada'] = true;
+          cartas[segundoCartaIndex!]['emparejada'] = true;
+          parejasEncontradas++;
+          puntuacion += 100;
+
+          if (parejasEncontradas == 6) {
+            juegoTerminado = true;
+            _mostrarDialogoVictoria();
+          }
+        } else {
+          // Pareja incorrecta - voltear de nuevo
+          cartas[primerCartaIndex!]['volteada'] = false;
+          cartas[segundoCartaIndex!]['volteada'] = false;
+        }
+
+        _resetearSeleccion();
+      });
+    });
+  }
+
+  bool _sonPareja(Map<String, dynamic> carta1, Map<String, dynamic> carta2) {
+    return (carta1['tipo'] == 'letra' &&
             carta2['tipo'] == 'senia' &&
             carta1['contenido'] == carta2['pareja']) ||
         (carta1['tipo'] == 'senia' &&
             carta2['tipo'] == 'letra' &&
             carta1['contenido'] == carta2['pareja']);
-
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (esPareja) {
-        // Pareja correcta
-        _matchController.forward().then((_) {
-          _matchController.reset();
-        });
-
-        setState(() {
-          cartas[primerCartaIndex!]['emparejada'] = true;
-          cartas[segundoCartaIndex!]['emparejada'] = true;
-          parejasEncontradas++;
-
-          // Bonus por pareja encontrada
-          puntuacion += 100;
-        });
-
-        if (parejasEncontradas == 6) {
-          _juegoCompletado();
-        }
-      } else {
-        // Pareja incorrecta
-        _shakeController.forward().then((_) {
-          _shakeController.reset();
-
-          setState(() {
-            cartas[primerCartaIndex!]['volteada'] = false;
-            cartas[segundoCartaIndex!]['volteada'] = false;
-          });
-        });
-      }
-
-      setState(() {
-        primerCartaIndex = null;
-        segundoCartaIndex = null;
-        procesandoComparacion = false;
-      });
-    });
   }
 
-  void _juegoCompletado() {
-    setState(() {
-      juegoTerminado = true;
-    });
-
-    // Bonus por completar el juego
-    final bonusVelocidad = max(0, 500 - (movimientos * 20));
-    puntuacion += bonusVelocidad;
-
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      _mostrarDialogoVictoria();
-    });
+  void _resetearSeleccion() {
+    primerCartaIndex = null;
+    segundoCartaIndex = null;
+    bloqueado = false;
   }
 
   void _mostrarDialogoVictoria() {
@@ -657,13 +566,6 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
                         Icons.stars,
                         theme,
                       ),
-                      const SizedBox(height: 8),
-                      _buildStatRow(
-                        'Precisión:',
-                        '${((6 / movimientos) * 100).toStringAsFixed(1)}%',
-                        Icons.gps_fixed,
-                        theme,
-                      ),
                     ],
                   ),
                 ),
@@ -686,7 +588,10 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
                           Navigator.pop(context);
                           _reiniciarJuego();
                         },
-                        child: const Text('JUGAR DE NUEVO'),
+                        child: const Text(
+                          'JUGAR DE NUEVO',
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -746,13 +651,12 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
   }
 
   void _reiniciarJuego() {
-    _flipController.reset();
-    _matchController.reset();
-    _shakeController.reset();
     _inicializarJuego();
   }
 
   void _mostrarPista() {
+    if (bloqueado || juegoTerminado) return;
+
     // Encontrar una carta no emparejada y no volteada
     List<int> cartasDisponibles = [];
     for (int i = 0; i < cartas.length; i++) {
@@ -770,12 +674,12 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
 
     setState(() {
       cartas[indexSeleccionado]['volteada'] = true;
-      puntuacion = max(0, puntuacion - 100); // Penalización por usar pista
+      puntuacion = max(0, puntuacion - 100);
     });
 
     // Ocultar la carta después de 2 segundos
     Future.delayed(const Duration(seconds: 2), () {
-      if (!cartas[indexSeleccionado]['emparejada']) {
+      if (mounted && !cartas[indexSeleccionado]['emparejada']) {
         setState(() {
           cartas[indexSeleccionado]['volteada'] = false;
         });
@@ -785,10 +689,10 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
     // Mostrar mensaje
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
+        content: const Row(
           children: [
-            const Icon(Icons.lightbulb, color: Colors.white),
-            const SizedBox(width: 8),
+            Icon(Icons.lightbulb, color: Colors.white),
+            SizedBox(width: 8),
             Text('Pista mostrada (-100 puntos)'),
           ],
         ),

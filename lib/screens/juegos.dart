@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
+import 'package:OratioLingo/screens/diccionario.dart'; // Nueva importación
 import 'package:OratioLingo/screens/juegos/juego_memoria.dart';
 import 'package:OratioLingo/screens/juegos/juego_mano_3d.dart';
 import 'package:OratioLingo/screens/juegos/juego_quiz_rapido.dart';
@@ -31,15 +32,15 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       'descripcion': 'Responde rápido las señas que aparecen',
       'icono': Icons.quiz,
       'color': const Color(0xFFFF9500),
-      'disponible': false,
-      'pantalla': null,
+      'disponible': true,
+      'pantalla': () => const JuegoQuizRapido(),
     },
     {
       'titulo': 'Mano 3D',
       'descripcion': 'Forma las señas moviendo los dedos',
       'icono': Icons.back_hand,
       'color': const Color(0xFF1CB0F6),
-      'disponible': false, // Cambiar a true cuando esté listo
+      'disponible': false,
       'pantalla': () => const JuegoMano3D(),
     },
     {
@@ -48,7 +49,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       'icono': Icons.spellcheck,
       'color': const Color(0xFFFF4B4B),
       'disponible': false,
-      'pantalla': () => const JuegoQuizRapido(),
+      'pantalla': null,
     },
   ];
 
@@ -140,9 +141,8 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
               color: theme.textTheme.bodyMedium?.color,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
-          // Grid de juegos responsivo
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -161,7 +161,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 15,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 1.3,
                   ),
                   itemCount: juegos.length,
                   itemBuilder: (context, index) {
@@ -236,7 +236,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                               : theme.disabledColor,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   // Título del juego
                   Text(
@@ -398,6 +398,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       child: Row(
         children: [
           _buildNavItem(Icons.layers, "Niveles", false, theme),
+          _buildNavItem(Icons.book, "Diccionario", false, theme), // Nuevo item
           _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
           _buildNavItem(Icons.games, "Juegos", true, theme),
           _buildNavItem(Icons.trending_up, "Progreso", false, theme),
@@ -428,7 +429,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10, // Reducido para acomodar 5 items
                 color:
                     isSelected
                         ? theme.colorScheme.primary
@@ -510,6 +511,9 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       case "Niveles":
         _abrirPantallaNiveles();
         break;
+      case "Diccionario":
+        _abrirPantallaDiccionario();
+        break;
       case "Videos":
         _abrirPantallaVideos();
         break;
@@ -544,6 +548,14 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => PantallaNiveles()),
+    );
+  }
+
+  void _abrirPantallaDiccionario() {
+    // Nuevo método
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaDiccionario()),
     );
   }
 

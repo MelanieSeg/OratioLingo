@@ -130,6 +130,9 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
       body: SafeArea(
         child: Column(
           children: [
+            // Barra de progreso ahora va aquí, antes del header
+            if (juegoIniciado && !juegoTerminado && !mostrandoFeedback)
+              _buildProgressBar(theme),
             _buildHeader(theme),
             if (!juegoIniciado && !juegoTerminado)
               _buildInstrucciones(theme)
@@ -169,21 +172,47 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
             ),
           ),
           if (juegoIniciado && !juegoTerminado)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: theme.dividerColor),
-              ),
-              child: Text(
-                '${preguntaActual + 1}/$totalPreguntas',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: theme.textTheme.bodyLarge?.color,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Text(
+                    '${preguntaActual + 1}/$totalPreguntas',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9500),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$puntuacion pts',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             )
           else
             const SizedBox(width: 48),
@@ -200,7 +229,7 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.timer, size: 80, color: const Color(0xFFFF9500)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
 
             Text(
               'Quiz Rápido de Señas',
@@ -211,7 +240,7 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             Text(
               '¡Pon a prueba tu velocidad!',
@@ -221,7 +250,7 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 10),
 
             Container(
               padding: const EdgeInsets.all(20),
@@ -296,17 +325,12 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Barra de progreso
-          _buildProgressBar(theme),
-          const SizedBox(height: 20),
-
-          // Timer circular
           _buildTimerCircular(theme),
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
 
           // Pregunta
           _buildPregunta(theme),
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
 
           // Opciones de respuesta
           Expanded(child: _buildOpciones(theme)),
@@ -316,44 +340,40 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
   }
 
   Widget _buildProgressBar(ThemeData theme) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Progreso',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
+    return Container(
+      height: 10,
+      margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      child: Stack(
+        children: [
+          Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color:
+                  theme.brightness == Brightness.dark
+                      ? theme.dividerColor
+                      : const Color.fromARGB(255, 187, 185, 189),
+              borderRadius: BorderRadius.circular(10),
             ),
-            Text(
-              'Puntos: $puntuacion',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFFF9500),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        AnimatedBuilder(
-          animation: _progressAnimation,
-          builder: (context, child) {
-            return LinearProgressIndicator(
-              value: (preguntaActual) / totalPreguntas,
-              backgroundColor: theme.dividerColor,
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFFFF9500),
-              ),
-              minHeight: 8,
-            );
-          },
-        ),
-      ],
+          ),
+          AnimatedBuilder(
+            animation: _progressAnimation,
+            builder: (context, child) {
+              return FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: (preguntaActual) / totalPreguntas,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    // Usar el color primario como en los niveles
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -422,7 +442,7 @@ class _JuegoQuizRapidoState extends State<JuegoQuizRapido>
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Container(
             width: 120,
             height: 120,
