@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:OratioLingo/screens/juegos.dart';
 import 'dart:math';
 
 class JuegoMemoria extends StatefulWidget {
@@ -219,7 +220,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria> {
           crossAxisCount: 3,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          childAspectRatio: 1.0,
         ),
         itemCount: cartas.length,
         itemBuilder: (context, index) {
@@ -607,7 +608,12 @@ class _JuegoMemoriaState extends State<JuegoMemoria> {
                         ),
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PantallaJuegos(),
+                            ), // Vuelve a la pantalla anterior
+                          );
                         },
                         child: const Text('SALIR'),
                       ),
