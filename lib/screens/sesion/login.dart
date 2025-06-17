@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:OratioLingo/services/auth_service.dart'; // Agrega esta importación
 import '../../services/firestore_services.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -81,6 +82,7 @@ class _LoginFormState extends State<LoginForm> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  final FirestoreServices _firestoreServices = FirestoreServices();
 
   @override
   void dispose() {
@@ -89,36 +91,43 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
-  Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _iniciarSesion() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final firestoreServices = FirestoreServices();
-      await firestoreServices.iniciarSesion(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      // Si llegamos aquí, el inicio de sesión fue exitoso
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/niveles');
-      }
-    } catch (e) {
-      // Mostrar error
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      try {
+        // Almacena el resultado pero no lo usamos directamente
+        await _firestoreServices.iniciarSesion(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+
+        // Verificar si es administrador
+        final authService = AuthService();
+        final esAdmin = await authService.esAdministrador();
+
+        // Redirigir según el rol
+        if (mounted) {
+          if (esAdmin) {
+            Navigator.pushReplacementNamed(context, '/admin');
+          } else {
+            Navigator.pushReplacementNamed(context, '/niveles');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -213,7 +222,7 @@ class _LoginFormState extends State<LoginForm> {
 
           // Botón de iniciar sesión
           ElevatedButton(
-            onPressed: _isLoading ? null : _login,
+            onPressed: _isLoading ? null : _iniciarSesion,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(

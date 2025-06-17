@@ -16,6 +16,12 @@ import 'package:OratioLingo/screens/progreso.dart';
 import 'package:OratioLingo/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:OratioLingo/screens/sesion/forgot-password.dart';
+//pantallas de admin
+import 'package:OratioLingo/screens/admin/dashboard.dart';
+import 'package:OratioLingo/screens/admin/gestionar_admins.dart';
+import 'package:OratioLingo/screens/admin/gestionar_videos.dart';
+import 'package:OratioLingo/screens/admin/estadisticas.dart';
+import 'package:OratioLingo/screens/admin/configuracion.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +56,7 @@ class MyApp extends StatelessWidget {
       valueListenable: themeNotifier,
       builder: (context, mode, _) {
         return MaterialApp(
-          title: 'Material App',
+          title: 'OratioLingo',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             brightness: Brightness.light,
@@ -71,6 +77,8 @@ class MyApp extends StatelessWidget {
             '/registrarme': (context) => const RegistrarmeScreen(),
             '/verificacion': (context) => const VerificacionScreen(),
             '/forgot-password': (context) => const ForgotPasswordScreen(),
+
+            // Rutas de usuario
             '/niveles': (context) => const PantallaNiveles(),
             '/nivel1': (context) => const Nivel1Screen(),
             '/nivel2': (context) => const Nivel2Screen(),
@@ -79,20 +87,29 @@ class MyApp extends StatelessWidget {
             '/videos': (context) => const PantallaVideos(),
             '/perfil': (context) => const PantallaPerfil(),
             '/progreso': (context) => const PantallaProgreso(),
+
+            // Rutas de administrador
+            '/admin': (context) => const AdminDashboard(),
+            '/admin/gestionar-admins':
+                (context) => const GestionarAdminsScreen(),
+            '/admin/gestionar-videos':
+                (context) => const GestionarVideosScreen(),
+            '/admin/estadisticas': (context) => const EstadisticasScreen(),
+            '/admin/configuracion': (context) => const ConfiguracionScreen(),
           },
 
           // Manejar rutas con argumentos
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/change-password':
-            final email = settings.arguments as String;
-            return MaterialPageRoute(
-              builder: (context) => ChangePasswordScreen(email: email),
-            );
-          default:
-            return null;
-        }
-      },
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case '/change-password':
+                final email = settings.arguments as String;
+                return MaterialPageRoute(
+                  builder: (context) => ChangePasswordScreen(email: email),
+                );
+              default:
+                return null;
+            }
+          },
         );
       },
     );

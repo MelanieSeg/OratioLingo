@@ -22,11 +22,12 @@ class FirestoreServices {
   }) async {
     try {
       // 1. Verificar si el nombre de usuario ya existe
-      final usuarioExistente = await _firestore
-          .collection(_usersCollection)
-          .where('nombreUsuario', isEqualTo: nombreUsuario)
-          .get();
-      
+      final usuarioExistente =
+          await _firestore
+              .collection(_usersCollection)
+              .where('nombreUsuario', isEqualTo: nombreUsuario)
+              .get();
+
       if (usuarioExistente.docs.isNotEmpty) {
         throw Exception('Este nombre de usuario ya está en uso');
       }
@@ -41,19 +42,23 @@ class FirestoreServices {
       await userCredential.user!.sendEmailVerification();
 
       // 4. Crear documento del usuario en Firestore
-      await _firestore.collection(_usersCollection).doc(userCredential.user!.uid).set({
-        'nombre': nombre,
-        'nombreUsuario': nombreUsuario,
-        'correo': email,
-        'fechaCreacion': FieldValue.serverTimestamp(),
-        'estaValidado': false, // Por defecto no está validado hasta que verifique su correo
-        'correoVerificado': false, // Estado de verificación del correo
-        'descripcion': descripcion ?? '',
-        'fechaNacimiento': fechaNacimiento,
-        'numeroTelefono': numeroTelefono ?? '',
-        'urlPhotoPerfil': urlPhotoPerfil ?? '',
-        'uid': userCredential.user!.uid,
-      });
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userCredential.user!.uid)
+          .set({
+            'nombre': nombre,
+            'nombreUsuario': nombreUsuario,
+            'correo': email,
+            'fechaCreacion': FieldValue.serverTimestamp(),
+            'estaValidado':
+                false, // Por defecto no está validado hasta que verifique su correo
+            'correoVerificado': false, // Estado de verificación del correo
+            'descripcion': descripcion ?? '',
+            'fechaNacimiento': fechaNacimiento,
+            'numeroTelefono': numeroTelefono ?? '',
+            'urlPhotoPerfil': urlPhotoPerfil ?? '',
+            'uid': userCredential.user!.uid,
+          });
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
@@ -80,41 +85,59 @@ class FirestoreServices {
         email: email,
         password: password,
       );
-      
-      // 2. Verificar si el usuario existe en Firestore
-      final docSnapshot = await _firestore
-          .collection(_usersCollection)
-          .doc(userCredential.user!.uid)
-          .get();
-      
-      if (!docSnapshot.exists) {
+
+      // 2. Primero verificamos si es un administrador
+      final adminDoc =
+          await _firestore
+              .collection('administradores')
+              .doc(userCredential.user!.uid)
+              .get();
+
+      // Si es un administrador, verificamos que esté activo
+      if (adminDoc.exists) {
+        final bool esActivo = adminDoc.data()?['activo'] ?? false;
+        if (!esActivo) {
+          await _auth.signOut();
+          throw Exception(
+            'Tu cuenta de administrador está desactivada. Contacta al administrador principal.',
+          );
+        }
+        // Si es un administrador activo, permitimos el acceso sin más verificaciones
+        return userCredential;
+      }
+
+      // 3. Si no es administrador, verificamos como usuario normal
+      final userDoc =
+          await _firestore
+              .collection(_usersCollection)
+              .doc(userCredential.user!.uid)
+              .get();
+
+      if (!userDoc.exists) {
         // Si no existe en Firestore pero sí en Auth, creamos un error
         await _auth.signOut();
         throw Exception('Usuario no encontrado en la base de datos');
       }
-      
-      // 3. Verificar si el correo está verificado
+
+      // 4. Para usuarios normales, verificar si el correo está verificado
       if (!userCredential.user!.emailVerified) {
         // Si no está verificado, enviamos un nuevo correo y cerramos sesión
         await userCredential.user!.sendEmailVerification();
         await _auth.signOut();
         throw Exception(
           'Por favor, verifica tu correo electrónico antes de iniciar sesión. '
-          'Se ha enviado un nuevo correo de verificación.'
+          'Se ha enviado un nuevo correo de verificación.',
         );
       }
-      
-      // 4. Actualizar el estado de verificación en Firestore si es necesario
-      if (docSnapshot.data()!['correoVerificado'] == false) {
+
+      // 5. Actualizar el estado de verificación en Firestore si es necesario
+      if (userDoc.data()!['correoVerificado'] == false) {
         await _firestore
             .collection(_usersCollection)
             .doc(userCredential.user!.uid)
-            .update({
-              'correoVerificado': true,
-              'estaValidado': true
-            });
+            .update({'correoVerificado': true, 'estaValidado': true});
       }
-      
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -134,31 +157,27 @@ class FirestoreServices {
     if (currentUser == null) {
       throw Exception('No hay usuario autenticado');
     }
-    
+
     // Recargar usuario para obtener estado actualizado
     await currentUser!.reload();
     final user = _auth.currentUser;
-    
+
     if (user!.emailVerified) {
       // Actualizar en Firestore si es necesario
-      final docSnapshot = await _firestore
-          .collection(_usersCollection)
-          .doc(user.uid)
-          .get();
-      
-      if (docSnapshot.exists && docSnapshot.data()!['correoVerificado'] == false) {
-        await _firestore
-            .collection(_usersCollection)
-            .doc(user.uid)
-            .update({
-              'correoVerificado': true,
-              'estaValidado': true
-            });
+      final docSnapshot =
+          await _firestore.collection(_usersCollection).doc(user.uid).get();
+
+      if (docSnapshot.exists &&
+          docSnapshot.data()!['correoVerificado'] == false) {
+        await _firestore.collection(_usersCollection).doc(user.uid).update({
+          'correoVerificado': true,
+          'estaValidado': true,
+        });
       }
-      
+
       return true;
     }
-    
+
     return false;
   }
 
@@ -167,7 +186,7 @@ class FirestoreServices {
     if (currentUser == null) {
       throw Exception('No hay usuario autenticado');
     }
-    
+
     await currentUser!.sendEmailVerification();
   }
 
@@ -182,39 +201,39 @@ class FirestoreServices {
       throw Exception('No hay usuario autenticado');
     }
 
-    final docSnapshot = await _firestore
-        .collection(_usersCollection)
-        .doc(currentUser!.uid)
-        .get();
-    
+    final docSnapshot =
+        await _firestore
+            .collection(_usersCollection)
+            .doc(currentUser!.uid)
+            .get();
+
     if (!docSnapshot.exists) {
       throw Exception('Usuario no encontrado en la base de datos');
     }
-    
+
     return docSnapshot.data()!;
   }
-  
+
   // Actualizar datos de usuario
   Future<void> actualizarDatosUsuario(Map<String, dynamic> datos) async {
     if (currentUser == null) {
       throw Exception('No hay usuario autenticado');
     }
-    
+
     await _firestore
         .collection(_usersCollection)
         .doc(currentUser!.uid)
         .update(datos);
   }
-  
+
   // Actualizar foto de perfil
   Future<void> actualizarFotoPerfil(String urlFoto) async {
     if (currentUser == null) {
       throw Exception('No hay usuario autenticado');
     }
-    
-    await _firestore
-        .collection(_usersCollection)
-        .doc(currentUser!.uid)
-        .update({'urlPhotoPerfil': urlFoto});
+
+    await _firestore.collection(_usersCollection).doc(currentUser!.uid).update({
+      'urlPhotoPerfil': urlFoto,
+    });
   }
 }

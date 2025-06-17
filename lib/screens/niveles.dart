@@ -19,7 +19,7 @@ class PantallaNiveles extends StatefulWidget {
 class _PantallaNivelesState extends State<PantallaNiveles> {
   final NivelesService _nivelesService = NivelesService();
   final FirestoreServices _firestoreServices = FirestoreServices();
-  
+
   List<Map<String, dynamic>> _progreso = [];
   bool _cargando = true;
   bool _isModalVisible = false;
@@ -48,7 +48,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       'numero': 4,
       'titulo': 'Letras O-S',
       'descripcion': 'Más señas por aprender',
-      'screen': null,
+      'screen': () => const Nivel3Screen(),
     },
     {
       'numero': 5,
@@ -74,7 +74,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     try {
       setState(() => _cargando = true);
       final progreso = await _nivelesService.obtenerProgreso();
-      
+
       if (mounted) {
         setState(() {
           _progreso = progreso;
@@ -122,12 +122,14 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     try {
       final nivelData = _progreso.firstWhere(
         (nivel) => nivel['numero_nivel'] == numeroNivel,
-        orElse: () => {
-          'numero_nivel': numeroNivel,
-          'isUnlocked': numeroNivel == 1, // Solo nivel 1 desbloqueado por defecto
-          'isFinished': false,
-          'puntuacion_maxima': 0,
-        },
+        orElse:
+            () => {
+              'numero_nivel': numeroNivel,
+              'isUnlocked':
+                  numeroNivel == 1, // Solo nivel 1 desbloqueado por defecto
+              'isFinished': false,
+              'puntuacion_maxima': 0,
+            },
       );
       return nivelData;
     } catch (e) {
@@ -144,7 +146,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   Future<bool> _verificarEstadoRealNivel(int numeroNivel) async {
     try {
       bool estadoReal = await _nivelesService.estaDesbloqueado(numeroNivel);
-      
+
       // Si el estado local difiere del real, actualizar silenciosamente
       final estadoLocal = _obtenerEstadoNivel(numeroNivel);
       if (estadoLocal['isUnlocked'] != estadoReal) {
@@ -177,13 +179,13 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   void _intentarAbrirNivelAnterior(int numeroNivel) async {
     final estadoNivel = _obtenerEstadoNivel(numeroNivel);
     final isUnlocked = estadoNivel['isUnlocked'] ?? false;
-    
+
     if (isUnlocked) {
       final nivelConfig = _nivelesConfig.firstWhere(
         (config) => config['numero'] == numeroNivel,
         orElse: () => {'numero': numeroNivel, 'screen': null},
       );
-      
+
       if (nivelConfig['screen'] != null) {
         _navegarANivel(nivelConfig);
       } else {
@@ -204,129 +206,137 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: Color(0xFF58CC02),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check, color: Colors.white, size: 24),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: theme.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                nivelConfig['titulo'] ?? 'Nivel $numeroNivel',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              nivelConfig['descripcion'] ?? '',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF58CC02).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF58CC02).withOpacity(0.3),
+            title: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF58CC02),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 24),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    nivelConfig['titulo'] ?? 'Nivel $numeroNivel',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nivelConfig['descripcion'] ?? '',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF58CC02).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF58CC02).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
                     children: [
-                      const Icon(
-                        Icons.emoji_events,
-                        color: Color(0xFF58CC02),
-                        size: 32,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.emoji_events,
+                            color: Color(0xFF58CC02),
+                            size: 32,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '¡COMPLETADO!',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF58CC02),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '¡COMPLETADO!',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF58CC02),
+                      if (estadoNivel['puntuacion_maxima'] != null &&
+                          estadoNivel['puntuacion_maxima'] > 0) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Mejor puntuación: ${estadoNivel['puntuacion_maxima']} pts',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
-                  if (estadoNivel['puntuacion_maxima'] != null && estadoNivel['puntuacion_maxima'] > 0) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'Mejor puntuación: ${estadoNivel['puntuacion_maxima']} pts',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _onNivelTapConValidacion(numeroNivel, true, nivelConfig);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF58CC02),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
               ),
-            ),
-            child: const Text('Jugar de nuevo'),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _onNivelTapConValidacion(numeroNivel, true, nivelConfig);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF58CC02),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Jugar de nuevo'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: _cargando 
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _cargarProgreso,
-              child: Column(
-                children: [
-                  _buildTopBar(theme),
-                  Expanded(child: _buildLevelsContainer(theme)),
-                  _buildBottomNavBar(theme),
-                ],
+      body:
+          _cargando
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                onRefresh: _cargarProgreso,
+                child: Column(
+                  children: [
+                    _buildTopBar(theme),
+                    Expanded(child: _buildLevelsContainer(theme)),
+                    _buildBottomNavBar(theme),
+                  ],
+                ),
               ),
-            ),
     );
   }
 
@@ -388,7 +398,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            
+
             // Título principal
             Text(
               'Niveles de Aprendizaje',
@@ -398,9 +408,9 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                 color: theme.textTheme.bodyLarge?.color,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Text(
               'Aprende lenguaje de señas paso a paso',
               style: TextStyle(
@@ -408,17 +418,17 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                 color: theme.textTheme.bodyMedium?.color,
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Primera fila de niveles (1, 2, 3)
             _buildLevelRow([1, 2, 3], theme),
             const SizedBox(height: 50),
-            
+
             // Segunda fila de niveles (4, 5, 6)
             _buildLevelRow([4, 5, 6], theme),
             const SizedBox(height: 50),
-            
+
             // Sección de examen
             _buildExamSection(theme),
             const SizedBox(height: 40),
@@ -446,7 +456,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     final isUnlocked = estadoNivel['isUnlocked'] ?? false;
     final isFinished = estadoNivel['isFinished'] ?? false;
     final puntuacion = estadoNivel['puntuacion_maxima'] ?? 0;
-    
+
     // Verificar si el nivel está configurado
     final nivelConfig = _nivelesConfig.firstWhere(
       (config) => config['numero'] == numeroNivel,
@@ -455,15 +465,11 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
     Color colorNivel;
     Widget contenidoNivel;
-    
+
     if (isFinished) {
       // VERDE con CHECK - Nivel completado
       colorNivel = const Color(0xFF58CC02);
-      contenidoNivel = const Icon(
-        Icons.check, 
-        color: Colors.white, 
-        size: 32,
-      );
+      contenidoNivel = const Icon(Icons.check, color: Colors.white, size: 32);
     } else if (isUnlocked) {
       // MORADO con NÚMERO - Nivel desbloqueado
       colorNivel = const Color(0xFF9C27B0); // Color morado
@@ -478,16 +484,14 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     } else {
       // GRIS con CANDADO - Nivel bloqueado
       colorNivel = Colors.grey[400]!;
-      contenidoNivel = const Icon(
-        Icons.lock, 
-        color: Colors.white, 
-        size: 28,
-      );
+      contenidoNivel = const Icon(Icons.lock, color: Colors.white, size: 28);
     }
 
     return GestureDetector(
-      onTap: () => _onNivelTapConValidacion(numeroNivel, isUnlocked, nivelConfig),
-      onLongPress: isFinished ? () => _mostrarInfoNivel(numeroNivel, estadoNivel) : null,
+      onTap:
+          () => _onNivelTapConValidacion(numeroNivel, isUnlocked, nivelConfig),
+      onLongPress:
+          isFinished ? () => _mostrarInfoNivel(numeroNivel, estadoNivel) : null,
       child: Column(
         children: [
           AnimatedContainer(
@@ -505,30 +509,32 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                     offset: const Offset(0, 8),
                   ),
               ],
-              border: isFinished 
-                ? Border.all(color: const Color(0xFF58CC02), width: 3)
-                : isUnlocked 
-                ? Border.all(color: const Color(0xFF9C27B0), width: 2)
-                : null,
+              border:
+                  isFinished
+                      ? Border.all(color: const Color(0xFF58CC02), width: 3)
+                      : isUnlocked
+                      ? Border.all(color: const Color(0xFF9C27B0), width: 2)
+                      : null,
             ),
             child: Center(child: contenidoNivel),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Título del nivel
           Text(
             nivelConfig['titulo'] ?? 'Nivel $numeroNivel',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isUnlocked || isFinished 
-                ? theme.textTheme.bodyLarge?.color 
-                : Colors.grey[500],
+              color:
+                  isUnlocked || isFinished
+                      ? theme.textTheme.bodyLarge?.color
+                      : Colors.grey[500],
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           // Mostrar puntuación si está completado
           if (isFinished && puntuacion > 0) ...[
             const SizedBox(height: 6),
@@ -555,7 +561,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
               ),
             ),
           ],
-          
+
           // Indicador de estado
           if (!isUnlocked && !isFinished) ...[
             const SizedBox(height: 6),
@@ -598,7 +604,11 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   }
 
   // Método mejorado con validación completa
-  void _onNivelTapConValidacion(int numeroNivel, bool isUnlockedLocal, Map<String, dynamic> nivelConfig) async {
+  void _onNivelTapConValidacion(
+    int numeroNivel,
+    bool isUnlockedLocal,
+    Map<String, dynamic> nivelConfig,
+  ) async {
     // Primera validación: estado local
     if (!isUnlockedLocal) {
       _mostrarNivelBloqueado(numeroNivel);
@@ -607,7 +617,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
     // Segunda validación: estado real desde Firestore
     bool estadoRealDesbloqueado = await _verificarEstadoRealNivel(numeroNivel);
-    
+
     if (!estadoRealDesbloqueado) {
       _mostrarNivelBloqueado(numeroNivel);
       return;
@@ -625,188 +635,201 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
   void _mostrarNivelBloqueado(int numeroNivel) {
     final theme = Theme.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.red[100],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.lock, color: Colors.red, size: 24),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: theme.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Nivel Bloqueado',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'El Nivel $numeroNivel está bloqueado.',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Completa el nivel anterior para desbloquearlo automáticamente.',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Información sobre el sistema de desbloqueo
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF9C27B0).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF9C27B0).withOpacity(0.3),
+            title: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.lock, color: Colors.red, size: 24),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
+                const SizedBox(width: 12),
+                const Text(
+                  'Nivel Bloqueado',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'El Nivel $numeroNivel está bloqueado.',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Completa el nivel anterior para desbloquearlo automáticamente.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Información sobre el sistema de desbloqueo
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF9C27B0).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF9C27B0).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
                     children: [
-                      Icon(
-                        Icons.info, 
-                        color: const Color(0xFF9C27B0), 
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Sistema de Progreso',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info,
+                            color: const Color(0xFF9C27B0),
+                            size: 20,
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Sistema de Progreso',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '• Los niveles se desbloquean automáticamente\n'
+                        '• Aparecen en morado cuando están disponibles\n'
+                        '• Se vuelven verdes cuando los completas',
+                        style: TextStyle(fontSize: 12),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '• Los niveles se desbloquean automáticamente\n'
-                    '• Aparecen en morado cuando están disponibles\n'
-                    '• Se vuelven verdes cuando los completas',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido'),
-          ),
-          if (numeroNivel > 1)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _intentarAbrirNivelAnterior(numeroNivel - 1);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9C27B0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              child: Text('Ir a Nivel ${numeroNivel - 1}'),
+              ],
             ),
-        ],
-      ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Entendido'),
+              ),
+              if (numeroNivel > 1)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _intentarAbrirNivelAnterior(numeroNivel - 1);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9C27B0),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text('Ir a Nivel ${numeroNivel - 1}'),
+                ),
+            ],
+          ),
     );
   }
 
   void _mostrarNivelNoDisponible(int numeroNivel) {
     final theme = Theme.of(context);
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.orange[100],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.construction, color: Colors.orange, size: 24),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: theme.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Próximamente',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'El Nivel $numeroNivel estará disponible pronto.',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '¡Mantente atento a las actualizaciones!',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.timeline, color: Colors.blue[600], size: 32),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Mientras tanto, completa los niveles disponibles para seguir aprendiendo.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blue[700],
-                    ),
-                    textAlign: TextAlign.center,
+            title: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.orange[100],
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
+                  child: Icon(
+                    Icons.construction,
+                    color: Colors.orange,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Próximamente',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'El Nivel $numeroNivel estará disponible pronto.',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '¡Mantente atento a las actualizaciones!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.timeline, color: Colors.blue[600], size: 32),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Mientras tanto, completa los niveles disponibles para seguir aprendiendo.',
+                        style: TextStyle(fontSize: 14, color: Colors.blue[700]),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Entendido'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -823,9 +846,8 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
   Widget _buildExamSection(ThemeData theme) {
     // Determinar si el examen está desbloqueado (si completó al menos 3 niveles)
-    int nivelesCompletados = _progreso
-        .where((nivel) => nivel['isFinished'] == true)
-        .length;
+    int nivelesCompletados =
+        _progreso.where((nivel) => nivel['isFinished'] == true).length;
     bool examenDesbloqueado = nivelesCompletados >= 3;
 
     return Container(
@@ -867,7 +889,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           ),
           const SizedBox(height: 8),
           Text(
-            examenDesbloqueado 
+            examenDesbloqueado
                 ? "¡Pon a prueba todos tus conocimientos!"
                 : "Completa 3 niveles para desbloquear el examen",
             style: TextStyle(
@@ -878,38 +900,36 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           ),
           const SizedBox(height: 20),
           GestureDetector(
-            onTap: examenDesbloqueado 
-                ? () => _mostrarError('Examen próximamente disponible')
-                : () => _mostrarError('Completa más niveles para desbloquear'),
+            onTap:
+                examenDesbloqueado
+                    ? () => _mostrarError('Examen próximamente disponible')
+                    : () =>
+                        _mostrarError('Completa más niveles para desbloquear'),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: examenDesbloqueado ? Colors.amber[700] : Colors.grey[400],
+                color:
+                    examenDesbloqueado ? Colors.amber[700] : Colors.grey[400],
                 shape: BoxShape.circle,
-                boxShadow: examenDesbloqueado ? [
-                  BoxShadow(
-                    color: Colors.amber.withOpacity(0.4),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ] : null,
+                boxShadow:
+                    examenDesbloqueado
+                        ? [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ]
+                        : null,
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Icon(
-                    Icons.star,
-                    color: Colors.white,
-                    size: 50,
-                  ),
+                  Icon(Icons.star, color: Colors.white, size: 50),
                   if (!examenDesbloqueado)
-                    Icon(
-                      Icons.lock,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    Icon(Icons.lock, color: Colors.white, size: 30),
                 ],
               ),
             ),
@@ -961,7 +981,12 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected, ThemeData theme) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    ThemeData theme,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () => _onNavItemTap(label),
@@ -971,14 +996,18 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? theme.colorScheme.primary : theme.disabledColor,
+              color:
+                  isSelected ? theme.colorScheme.primary : theme.disabledColor,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? theme.colorScheme.primary : theme.disabledColor,
+                color:
+                    isSelected
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
               ),
             ),
           ],
@@ -1000,7 +1029,9 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: theme.cardColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           contentPadding: const EdgeInsets.all(20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1016,7 +1047,9 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text("Editar Perfil"),
                 ),
@@ -1033,7 +1066,9 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text("Cerrar Sesión"),
                 ),
@@ -1048,13 +1083,22 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   void _onNavItemTap(String label) {
     switch (label) {
       case "Videos":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaVideos()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PantallaVideos()),
+        );
         break;
       case "Juegos":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaJuegos()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PantallaJuegos()),
+        );
         break;
       case "Progreso":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const PantallaProgreso()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaProgreso()),
+        );
         break;
       case "Niveles":
         break; // Ya estamos aquí
@@ -1069,6 +1113,9 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
   }
 
   void _abrirEditarPerfil() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaPerfil()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaPerfil()),
+    );
   }
 }
