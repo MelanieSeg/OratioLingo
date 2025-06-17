@@ -6,6 +6,7 @@ import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
+import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/levels/nivel3.dart';
 import 'package:OratioLingo/services/niveles_services.dart';
 
@@ -401,7 +402,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
             // Título principal
             Text(
-              'Niveles de Aprendizaje',
+              'Niveles de aprendizaje',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -419,7 +420,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
 
             // Primera fila de niveles (1, 2, 3)
             _buildLevelRow([1, 2, 3], theme),
@@ -973,6 +974,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       child: Row(
         children: [
           _buildNavItem(Icons.layers, "Niveles", true, theme),
+          _buildNavItem(Icons.book, "Diccionario", false, theme),
           _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
           _buildNavItem(Icons.games, "Juegos", false, theme),
           _buildNavItem(Icons.trending_up, "Progreso", false, theme),
@@ -1082,6 +1084,11 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
 
   void _onNavItemTap(String label) {
     switch (label) {
+      case "Niveles":
+        break; // Ya estamos en niveles
+      case "Diccionario":
+        _abrirPantallaDiccionario();
+        break;
       case "Videos":
         Navigator.push(
           context,
@@ -1100,8 +1107,6 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           MaterialPageRoute(builder: (context) => const PantallaProgreso()),
         );
         break;
-      case "Niveles":
-        break; // Ya estamos aquí
     }
   }
 
@@ -1116,6 +1121,13 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => PantallaPerfil()),
+    );
+  }
+
+  void _abrirPantallaDiccionario() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaDiccionario()),
     );
   }
 }

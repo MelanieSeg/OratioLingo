@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
-import 'package:OratioLingo/screens/diccionario.dart'; // Nueva importación
+import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/juegos/juego_memoria.dart';
 import 'package:OratioLingo/screens/juegos/juego_mano_3d.dart';
 import 'package:OratioLingo/screens/juegos/juego_quiz_rapido.dart';
@@ -196,13 +196,13 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
           border: Border.all(
             color:
                 juego['disponible']
-                    ? juego['color'].withOpacity(0.3)
-                    : theme.disabledColor.withOpacity(0.3),
+                    ? juego['color'].withAlpha((0.3 * 255).toInt())
+                    : theme.disabledColor.withAlpha((0.3 * 255).toInt()),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha((0.1 * 255).toInt()),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -223,8 +223,10 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                     decoration: BoxDecoration(
                       color:
                           juego['disponible']
-                              ? juego['color'].withOpacity(0.2)
-                              : theme.disabledColor.withOpacity(0.2),
+                              ? juego['color'].withAlpha((0.2 * 255).toInt())
+                              : theme.disabledColor.withAlpha(
+                                (0.2 * 255).toInt(),
+                              ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -398,7 +400,7 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
       child: Row(
         children: [
           _buildNavItem(Icons.layers, "Niveles", false, theme),
-          _buildNavItem(Icons.book, "Diccionario", false, theme), // Nuevo item
+          _buildNavItem(Icons.book, "Diccionario", false, theme),
           _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
           _buildNavItem(Icons.games, "Juegos", true, theme),
           _buildNavItem(Icons.trending_up, "Progreso", false, theme),
@@ -552,7 +554,6 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
   }
 
   void _abrirPantallaDiccionario() {
-    // Nuevo método
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => PantallaDiccionario()),

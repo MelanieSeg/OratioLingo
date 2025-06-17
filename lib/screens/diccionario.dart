@@ -318,11 +318,11 @@ class _PantallaDiccionarioState extends State<PantallaDiccionario> {
         children: [
           // Título de la sección
           Text(
-            "📖 Diccionario de Señas",
+            "Diccionario de señas",
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 8),

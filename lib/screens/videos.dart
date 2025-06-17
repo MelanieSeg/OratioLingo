@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:OratioLingo/screens/diccionario.dart';
 
 Future<List<Map<String, dynamic>>> processVideos(
   List<QueryDocumentSnapshot> docs,
@@ -266,6 +267,13 @@ class _PantallaVideosState extends State<PantallaVideos>
             _abrirPantallaNiveles,
             theme,
           ),
+          _buildNavItem(
+            'Diccionario', // Nuevo ítem para el diccionario
+            Icons.book, // Icono del diccionario
+            false,
+            _abrirPantallaDiccionario, // Nuevo método de navegación
+            theme,
+          ),
           _buildNavItem('Videos', Icons.play_circle_outline, true, null, theme),
           _buildNavItem(
             'Juegos',
@@ -401,5 +409,13 @@ class _PantallaVideosState extends State<PantallaVideos>
 
   void _abrirEditarPerfil() {
     Navigator.of(context).pushNamed('/perfil');
+  }
+
+  // Primero, agregar el método de navegación al diccionario
+  void _abrirPantallaDiccionario() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const PantallaDiccionario()),
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:OratioLingo/screens/niveles.dart';
 import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/juegos.dart';
 import 'package:OratioLingo/screens/perfil.dart';
+import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,12 +21,12 @@ class _PantallaProgresoState extends State<PantallaProgreso>
     with TickerProviderStateMixin {
   final NivelesService _nivelesService = NivelesService();
   final FirestoreServices _firestoreServices = FirestoreServices();
-  
+
   List<Map<String, dynamic>> _progreso = [];
   Map<String, dynamic> _estadisticasGenerales = {};
   bool _cargando = true;
   bool _isModalVisible = false;
-  
+
   late AnimationController _progressController;
   late AnimationController _chartController;
   late Animation<double> _progressAnimation;
@@ -65,20 +66,20 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   Future<void> _cargarDatos() async {
     try {
       setState(() => _cargando = true);
-      
+
       // Cargar progreso de niveles
       final progreso = await _nivelesService.obtenerProgreso();
-      
+
       // Cargar estadísticas generales
       final estadisticas = await _obtenerEstadisticasGenerales();
-      
+
       if (mounted) {
         setState(() {
           _progreso = progreso;
           _estadisticasGenerales = estadisticas;
           _cargando = false;
         });
-        
+
         // Iniciar animaciones después de cargar datos
         _progressController.forward();
         Future.delayed(const Duration(milliseconds: 300), () {
@@ -102,12 +103,13 @@ class _PantallaProgresoState extends State<PantallaProgreso>
       }
 
       // Obtener estadísticas de Firestore
-      final estadisticasDoc = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(user.uid)
-          .collection('estadisticas')
-          .doc('general')
-          .get();
+      final estadisticasDoc =
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(user.uid)
+              .collection('estadisticas')
+              .doc('general')
+              .get();
 
       if (estadisticasDoc.exists) {
         final data = estadisticasDoc.data()!;
@@ -118,9 +120,11 @@ class _PantallaProgresoState extends State<PantallaProgreso>
           'racha_maxima': data['racha_maxima'] ?? 1,
           'total_aciertos': data['total_aciertos'] ?? 0,
           'total_fallos': data['total_fallos'] ?? 0,
-          'precision': data['total_aciertos'] != null && data['total_fallos'] != null
-              ? data['total_aciertos'] / (data['total_aciertos'] + data['total_fallos'])
-              : 0.0,
+          'precision':
+              data['total_aciertos'] != null && data['total_fallos'] != null
+                  ? data['total_aciertos'] /
+                      (data['total_aciertos'] + data['total_fallos'])
+                  : 0.0,
           'niveles_completados': data['niveles_completados'] ?? 0,
           'nivel_maximo_alcanzado': data['nivel_maximo_alcanzado'] ?? 1,
           'fecha_registro': data['fecha_creacion']?.toDate() ?? DateTime.now(),
@@ -163,28 +167,29 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
           _buildTopBar(theme),
           Expanded(
-            child: _cargando 
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Cargando tu progreso...'),
-                      ],
+            child:
+                _cargando
+                    ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Cargando tu progreso...'),
+                        ],
+                      ),
+                    )
+                    : RefreshIndicator(
+                      onRefresh: _cargarDatos,
+                      child: _buildContent(theme),
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _cargarDatos,
-                    child: _buildContent(theme),
-                  ),
           ),
           _buildBottomNavBar(theme),
         ],
@@ -251,7 +256,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            
+
             // Título
             Text(
               'Mi Progreso',
@@ -261,7 +266,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 color: theme.textTheme.bodyLarge?.color,
               ),
             ),
-            
+
             Text(
               'Tu evolución en el aprendizaje',
               style: TextStyle(
@@ -269,25 +274,25 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 color: theme.textTheme.bodyMedium?.color,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Resumen general
             _buildResumenGeneral(theme),
             const SizedBox(height: 24),
-            
+
             // Gráfico circular de progreso
             _buildGraficoProgreso(theme),
             const SizedBox(height: 24),
-            
+
             // Estadísticas detalladas
             _buildEstadisticasDetalladas(theme),
             const SizedBox(height: 24),
-            
+
             // Progreso por nivel
             _buildProgresoNiveles(theme),
             const SizedBox(height: 24),
-            
+
             // Racha y motivación
             _buildRachayMotivacion(theme),
             const SizedBox(height: 24),
@@ -299,10 +304,18 @@ class _PantallaProgresoState extends State<PantallaProgreso>
 
   Widget _buildResumenGeneral(ThemeData theme) {
     // Calcular estadísticas desde los datos reales
-    int nivelesCompletados = _progreso.where((n) => n['isFinished'] == true).length;
-    int totalNiveles = math.max(_progreso.length, 6); // Asegurar al menos 6 niveles
-    double porcentajeProgreso = totalNiveles > 0 ? (nivelesCompletados / totalNiveles) : 0;
-    int puntuacionTotal = _progreso.fold(0, (sum, n) => sum + ((n['puntuacion_maxima'] ?? 0) as int));
+    int nivelesCompletados =
+        _progreso.where((n) => n['isFinished'] == true).length;
+    int totalNiveles = math.max(
+      _progreso.length,
+      6,
+    ); // Asegurar al menos 6 niveles
+    double porcentajeProgreso =
+        totalNiveles > 0 ? (nivelesCompletados / totalNiveles) : 0;
+    int puntuacionTotal = _progreso.fold(
+      0,
+      (sum, n) => sum + ((n['puntuacion_maxima'] ?? 0) as int),
+    );
 
     // Obtener precisión de estadísticas generales
     double precision = (_estadisticasGenerales['precision'] ?? 0.0).toDouble();
@@ -365,7 +378,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Barra de progreso animada
                   Container(
                     height: 8,
@@ -375,7 +388,8 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                     ),
                     child: FractionallySizedBox(
                       alignment: Alignment.centerLeft,
-                      widthFactor: porcentajeProgreso * _progressAnimation.value,
+                      widthFactor:
+                          porcentajeProgreso * _progressAnimation.value,
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -385,14 +399,20 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Estadísticas rápidas
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildQuickStat('Niveles\nCompletados', '$nivelesCompletados/$totalNiveles'),
+                      _buildQuickStat(
+                        'Niveles\nCompletados',
+                        '$nivelesCompletados/$totalNiveles',
+                      ),
                       _buildQuickStat('Puntuación\nTotal', '$puntuacionTotal'),
-                      _buildQuickStat('Precisión', '${(precision * 100).round()}%'),
+                      _buildQuickStat(
+                        'Precisión',
+                        '${(precision * 100).round()}%',
+                      ),
                     ],
                   ),
                 ],
@@ -417,10 +437,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.9),
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9)),
           textAlign: TextAlign.center,
         ),
       ],
@@ -428,7 +445,8 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   }
 
   Widget _buildGraficoProgreso(ThemeData theme) {
-    int nivelesCompletados = _progreso.where((n) => n['isFinished'] == true).length;
+    int nivelesCompletados =
+        _progreso.where((n) => n['isFinished'] == true).length;
     int totalNiveles = math.max(_progreso.length, 6);
     double porcentaje = nivelesCompletados / totalNiveles;
 
@@ -459,7 +477,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Gráfico circular personalizado
               SizedBox(
                 height: 150,
@@ -474,7 +492,9 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                         value: porcentaje * _chartAnimation.value,
                         strokeWidth: 12,
                         backgroundColor: theme.dividerColor.withOpacity(0.3),
-                        valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                     Column(
@@ -501,7 +521,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Leyenda
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -524,10 +544,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12)),
@@ -565,7 +582,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Primera fila
           Row(
             children: [
@@ -573,9 +590,10 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 child: _buildStatCard(
                   icon: Icons.schedule,
                   title: 'Tiempo Total',
-                  value: tiempoTotal >= 60 
-                      ? '${(tiempoTotal / 60).floor()}h ${tiempoTotal % 60}m'
-                      : '${tiempoTotal}m',
+                  value:
+                      tiempoTotal >= 60
+                          ? '${(tiempoTotal / 60).floor()}h ${tiempoTotal % 60}m'
+                          : '${tiempoTotal}m',
                   color: Colors.blue,
                   theme: theme,
                 ),
@@ -593,7 +611,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Segunda fila
           Row(
             children: [
@@ -688,30 +706,26 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Lista de niveles con su progreso
           if (_progreso.isEmpty) ...[
             Center(
               child: Column(
                 children: [
-                  Icon(
-                    Icons.school,
-                    size: 48,
-                    color: theme.dividerColor,
-                  ),
+                  Icon(Icons.school, size: 48, color: theme.dividerColor),
                   const SizedBox(height: 12),
                   Text(
                     'Aún no has comenzado ningún nivel',
-                    style: TextStyle(
-                      color: theme.textTheme.bodyMedium?.color,
-                    ),
+                    style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const PantallaNiveles()),
+                        MaterialPageRoute(
+                          builder: (context) => const PantallaNiveles(),
+                        ),
                       );
                     },
                     child: const Text('Comenzar Aprendizaje'),
@@ -736,9 +750,9 @@ class _PantallaProgresoState extends State<PantallaProgreso>
     final isFinished = nivel['isFinished'] ?? false;
     final puntuacion = nivel['puntuacion_maxima'] ?? 0;
     final intentos = nivel['intentos'] ?? 0;
-    
+
     String titulo = _obtenerTituloNivel(numeroNivel);
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -748,29 +762,31 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isFinished 
-                  ? const Color(0xFF58CC02)
-                  : isUnlocked 
-                  ? theme.colorScheme.primary
-                  : Colors.grey[400],
+              color:
+                  isFinished
+                      ? const Color(0xFF58CC02)
+                      : isUnlocked
+                      ? theme.colorScheme.primary
+                      : Colors.grey[400],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
-              child: isFinished
-                  ? const Icon(Icons.check, color: Colors.white, size: 20)
-                  : isUnlocked
-                  ? Text(
-                      '$numeroNivel',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : const Icon(Icons.lock, color: Colors.white, size: 16),
+              child:
+                  isFinished
+                      ? const Icon(Icons.check, color: Colors.white, size: 20)
+                      : isUnlocked
+                      ? Text(
+                        '$numeroNivel',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                      : const Icon(Icons.lock, color: Colors.white, size: 16),
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // Información del nivel
           Expanded(
             child: Column(
@@ -803,16 +819,13 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                 ] else ...[
                   Text(
                     'Nivel bloqueado',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
               ],
             ),
           ),
-          
+
           // Indicador de estado
           if (isFinished)
             Container(
@@ -866,15 +879,12 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   Widget _buildRachayMotivacion(ThemeData theme) {
     int rachaActual = _estadisticasGenerales['racha_actual'] ?? 1;
     int rachaMaxima = _estadisticasGenerales['racha_maxima'] ?? 1;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.orange.shade400,
-            Colors.orange.shade600,
-          ],
+          colors: [Colors.orange.shade400, Colors.orange.shade600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -895,7 +905,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             size: 48,
           ),
           const SizedBox(height: 12),
-          
+
           const Text(
             '¡Racha de Estudio!',
             style: TextStyle(
@@ -905,30 +915,33 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             ),
           ),
           const SizedBox(height: 8),
-          
+
           Text(
-            rachaActual > 1 
+            rachaActual > 1
                 ? 'Llevas $rachaActual días consecutivos estudiando'
                 : '¡Comienza tu racha de estudio!',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
+            style: const TextStyle(fontSize: 14, color: Colors.white),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildRachaItem('Racha Actual', '$rachaActual día${rachaActual != 1 ? 's' : ''}'),
-              _buildRachaItem('Racha Máxima', '$rachaMaxima día${rachaMaxima != 1 ? 's' : ''}'),
+              _buildRachaItem(
+                'Racha Actual',
+                '$rachaActual día${rachaActual != 1 ? 's' : ''}',
+              ),
+              _buildRachaItem(
+                'Racha Máxima',
+                '$rachaMaxima día${rachaMaxima != 1 ? 's' : ''}',
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           Text(
-            rachaActual >= 7 
+            rachaActual >= 7
                 ? '¡Excelente! Mantén esta constancia para dominar el lenguaje de señas.'
                 : '¡Sigue así! Cada día cuenta para dominar el lenguaje de señas.',
             style: const TextStyle(
@@ -954,13 +967,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             color: Colors.white,
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.white,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white)),
       ],
     );
   }
@@ -981,6 +988,7 @@ class _PantallaProgresoState extends State<PantallaProgreso>
       child: Row(
         children: [
           _buildNavItem(Icons.layers, "Niveles", false, theme),
+          _buildNavItem(Icons.book, "Diccionario", false, theme),
           _buildNavItem(Icons.play_circle_outline, "Videos", false, theme),
           _buildNavItem(Icons.games, "Juegos", false, theme),
           _buildNavItem(Icons.trending_up, "Progreso", true, theme),
@@ -989,7 +997,12 @@ class _PantallaProgresoState extends State<PantallaProgreso>
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected, ThemeData theme) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    ThemeData theme,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () => _onNavItemTap(label),
@@ -999,14 +1012,18 @@ class _PantallaProgresoState extends State<PantallaProgreso>
             Icon(
               icon,
               size: 24,
-              color: isSelected ? theme.colorScheme.primary : theme.disabledColor,
+              color:
+                  isSelected ? theme.colorScheme.primary : theme.disabledColor,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? theme.colorScheme.primary : theme.disabledColor,
+                color:
+                    isSelected
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
               ),
             ),
           ],
@@ -1028,7 +1045,9 @@ class _PantallaProgresoState extends State<PantallaProgreso>
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: theme.cardColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           contentPadding: const EdgeInsets.all(20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1044,7 +1063,9 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text("Editar Perfil"),
                 ),
@@ -1061,7 +1082,9 @@ class _PantallaProgresoState extends State<PantallaProgreso>
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text("Cerrar Sesión"),
                 ),
@@ -1076,17 +1099,36 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   void _onNavItemTap(String label) {
     switch (label) {
       case "Niveles":
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PantallaNiveles()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaNiveles()),
+        );
+        break;
+      case "Diccionario":
+        _abrirPantallaDiccionario();
         break;
       case "Videos":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaVideos()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PantallaVideos()),
+        );
         break;
       case "Juegos":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaJuegos()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PantallaJuegos()),
+        );
         break;
       case "Progreso":
         break; // Ya estamos aquí
     }
+  }
+
+  void _abrirPantallaDiccionario() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const PantallaDiccionario()),
+    );
   }
 
   void _cerrarSesion() {
@@ -1097,7 +1139,10 @@ class _PantallaProgresoState extends State<PantallaProgreso>
   }
 
   void _abrirEditarPerfil() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PantallaPerfil()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PantallaPerfil()),
+    );
   }
 }
 
@@ -1119,20 +1164,22 @@ class ProgressCirclePainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2 - 10;
 
     // Círculo de fondo
-    final backgroundPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-    
+    final backgroundPaint =
+        Paint()
+          ..color = backgroundColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 8
+          ..strokeCap = StrokeCap.round;
+
     canvas.drawCircle(center, radius, backgroundPaint);
 
     // Círculo de progreso
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
+    final progressPaint =
+        Paint()
+          ..color = progressColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 8
+          ..strokeCap = StrokeCap.round;
 
     final sweepAngle = 2 * math.pi * progress;
     canvas.drawArc(
