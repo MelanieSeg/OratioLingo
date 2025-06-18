@@ -13,6 +13,7 @@ import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/theme_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Asegúrate de importar esto
 import 'package:OratioLingo/screens/progreso.dart';
 import 'package:OratioLingo/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,6 +24,7 @@ import 'package:OratioLingo/screens/admin/gestionar_admins.dart';
 import 'package:OratioLingo/screens/admin/gestionar_videos.dart';
 import 'package:OratioLingo/screens/admin/estadisticas.dart';
 import 'package:OratioLingo/screens/admin/configuracion.dart';
+import 'package:OratioLingo/screens/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,19 +35,7 @@ void main() async {
   await Permission.camera.request();
   await Permission.photos.request();
 
-  runApp(
-    MaterialApp(
-      home: FutureBuilder(
-        future: Future.delayed(Duration.zero),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return const MyApp();
-        },
-      ),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -69,11 +59,15 @@ class MyApp extends StatelessWidget {
             brightness: Brightness.dark,
             primaryColor: Color(0xFF6A4C93),
             colorScheme: ColorScheme.dark(primary: Color(0xFF6A4C93)),
-            scaffoldBackgroundColor: const Color(0xFF181818),
+            scaffoldBackgroundColor: const Color.fromARGB(70, 0, 0, 0),
+            cardColor: const Color(
+              0xFF2C2C2C,
+            ), // Color oscuro para las tarjetas
           ),
           themeMode: mode,
-          initialRoute: '/login',
+          initialRoute: '/',
           routes: {
+            '/': (context) => const SplashScreen(),
             '/login': (context) => const LoginScreen(),
             '/registrarme': (context) => const RegistrarmeScreen(),
             '/verificacion': (context) => const VerificacionScreen(),

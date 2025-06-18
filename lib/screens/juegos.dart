@@ -126,11 +126,11 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
         children: [
           // Título de la sección
           Text(
-            "🎮 Juegos Divertidos",
+            "Juegos divertidos",
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
