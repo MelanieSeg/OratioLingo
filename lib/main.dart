@@ -13,7 +13,7 @@ import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/theme_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Asegúrate de importar esto
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:OratioLingo/screens/progreso.dart';
 import 'package:OratioLingo/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';

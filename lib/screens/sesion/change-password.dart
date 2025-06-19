@@ -126,8 +126,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Colores que se adaptan al tema
+    final Color textFieldFillColor =
+        Theme.of(context).brightness == Brightness.light
+            ? Colors.grey[50]!
+            : Colors.grey[800]!;
+
+    final Color counterBgColor =
+        Theme.of(context).brightness == Brightness.light
+            ? Colors.blue[50]!
+            : Colors.blue[900]!.withAlpha(77);
+
+    final Color counterBorderColor =
+        Theme.of(context).brightness == Brightness.light
+            ? Colors.blue[200]!
+            : Colors.blue[700]!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Usar el color de fondo del tema
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -160,7 +177,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           shape: BoxShape.circle,
                           color: Theme.of(
                             context,
-                          ).primaryColor.withOpacity(0.1),
+                          ).primaryColor.withAlpha(25), // ~0.1 opacity
                           image: const DecorationImage(
                             image: AssetImage('lib/assets/images/logo.png'),
                             fit: BoxFit.contain,
@@ -172,12 +189,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                       Text(
                         "Cambiar contraseña",
-                        style: Theme.of(
-                          context,
-                        ).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
 
@@ -187,7 +200,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         "Ingresa el código de verificación que enviamos a ${widget.email} y tu nueva contraseña.",
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurface
+                              .withAlpha(179), // ~0.7 opacity
                           height: 1.5,
                         ),
                         textAlign: TextAlign.center,
@@ -205,12 +219,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Código de verificación
-                      const Text(
+                      Text(
                         'Código de verificación',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -226,14 +240,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 prefixIcon: const Icon(Icons.security),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
-                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withAlpha(77), // ~0.3 opacity
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -244,7 +258,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   ),
                                 ),
                                 filled: true,
-                                fillColor: Colors.grey[50],
+                                fillColor: textFieldFillColor,
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -265,12 +279,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       const SizedBox(height: 24),
 
                       // Nueva contraseña
-                      const Text(
+                      Text(
                         'Nueva contraseña',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -296,11 +310,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.onSurface
+                                  .withAlpha(77), // ~0.3 opacity
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -310,7 +326,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.grey[50],
+                          fillColor: textFieldFillColor,
                           helperText: PasswordValidator.helperText,
                         ),
                         validator: PasswordValidator.validate,
@@ -319,12 +335,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       const SizedBox(height: 20),
 
                       // Confirmar contraseña
-                      const Text(
+                      Text(
                         'Confirmar contraseña',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -351,11 +367,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.onSurface
+                                  .withAlpha(77), // ~0.3 opacity
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -365,7 +383,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.grey[50],
+                          fillColor: textFieldFillColor,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -422,7 +440,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const SizedBox(height: 20),
 
                 // Contador de redirección
-                if (_isLoading) ...{Center(child: _ContadorRedireccion())},
+                if (_isLoading)
+                  Center(
+                    child: _ContadorRedireccion(
+                      counterBgColor: counterBgColor,
+                      counterBorderColor: counterBorderColor,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -434,6 +458,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
 // Widget para mostrar el contador de redirección
 class _ContadorRedireccion extends StatefulWidget {
+  final Color counterBgColor;
+  final Color counterBorderColor;
+
+  const _ContadorRedireccion({
+    required this.counterBgColor,
+    required this.counterBorderColor,
+  });
+
   @override
   State<_ContadorRedireccion> createState() => _ContadorRedireccionState();
 }
@@ -468,12 +500,17 @@ class _ContadorRedireccionState extends State<_ContadorRedireccion> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor =
+        Theme.of(context).brightness == Brightness.light
+            ? Colors.blue[700]
+            : Colors.blue[300];
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: widget.counterBgColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue[200]!),
+        border: Border.all(color: widget.counterBorderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -484,15 +521,22 @@ class _ContadorRedireccionState extends State<_ContadorRedireccion> {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               value: (_segundosRestantes / 4),
-              backgroundColor: Colors.blue[100],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+              backgroundColor:
+                  Theme.of(context).brightness == Brightness.light
+                      ? Colors.blue[100]
+                      : Colors.blue[700],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).brightness == Brightness.light
+                    ? Colors.blue[600]!
+                    : Colors.blue[300]!,
+              ),
             ),
           ),
           const SizedBox(width: 12),
           Text(
             'Redirigiendo en $_segundosRestantes segundos...',
             style: TextStyle(
-              color: Colors.blue[700],
+              color: textColor,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
