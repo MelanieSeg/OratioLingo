@@ -351,22 +351,6 @@ class _RegistroFormState extends State<_RegistroForm> {
           ),
           const SizedBox(height: 16),
 
-          // Descripción (opcional)
-          TextFormField(
-            controller: _descripcionController,
-            maxLines: 2,
-            decoration: InputDecoration(
-              labelText: 'Descripción (opcional)',
-              prefixIcon: Icon(Icons.description, color: theme.iconTheme.color),
-              border: inputBorder,
-              enabledBorder: inputBorder,
-              focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
           // Fecha de nacimiento
           InkWell(
             onTap: _selectDate,
@@ -389,22 +373,6 @@ class _RegistroFormState extends State<_RegistroForm> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Teléfono (opcional)
-          TextFormField(
-            controller: _telefonoController,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              labelText: 'Número de teléfono (opcional)',
-              prefixIcon: Icon(Icons.phone, color: theme.iconTheme.color),
-              border: inputBorder,
-              enabledBorder: inputBorder,
-              focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 30),
 
           // Botón de registro
           ElevatedButton(
