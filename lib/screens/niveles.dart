@@ -894,7 +894,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
           Text(
             examenDesbloqueado
                 ? "¡Pon a prueba todos tus conocimientos!"
-                : "Completa 3 niveles para desbloquear el examen",
+                : "Completa todos los niveles para desbloquear el examen",
             style: TextStyle(
               fontSize: 14,
               color: theme.textTheme.bodyMedium?.color,
