@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/niveles.dart';
-import 'package:OratioLingo/services/niveles_services.dart'; // Añadir esta importación
+import 'package:OratioLingo/services/niveles_services.dart';
 import 'dart:async';
+import 'dart:math';
 
-class Nivel4Screen extends StatefulWidget {
-  const Nivel4Screen({super.key});
+class Nivel5Screen extends StatefulWidget {
+  const Nivel5Screen({super.key});
 
   @override
-  State<Nivel4Screen> createState() => _Nivel4ScreenState();
+  State<Nivel5Screen> createState() => _Nivel5ScreenState();
 }
 
-class _Nivel4ScreenState extends State<Nivel4Screen>
+class _Nivel5ScreenState extends State<Nivel5Screen>
     with TickerProviderStateMixin {
   int ejercicioActual = 0;
   int aciertos = 0;
   int vidas = 3; // Sistema de vidas
   int totalFallos = 0; // Contador total de fallos
-  final totalEjercicios = 5; // Solo O, P, Q, R, S
+  final totalEjercicios = 7; // T, U, V, W, X, Y, Z + 2 actividades nuevas
 
   // Controladores para animaciones
   late AnimationController _progressController;
@@ -31,11 +32,13 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
   // Estados para cada ejercicio
   Map<String, dynamic> estadoEmparejamiento = {
     'parejas': [
-      {'senia': 'o', 'letra': 'O', 'emparejada': false, 'error': false},
-      {'senia': 'p', 'letra': 'P', 'emparejada': false, 'error': false},
-      {'senia': 'q', 'letra': 'Q', 'emparejada': false, 'error': false},
-      {'senia': 'r', 'letra': 'R', 'emparejada': false, 'error': false},
-      {'senia': 's', 'letra': 'S', 'emparejada': false, 'error': false},
+      {'senia': 't', 'letra': 'T', 'emparejada': false, 'error': false},
+      {'senia': 'u', 'letra': 'U', 'emparejada': false, 'error': false},
+      {'senia': 'v', 'letra': 'V', 'emparejada': false, 'error': false},
+      {'senia': 'w', 'letra': 'W', 'emparejada': false, 'error': false},
+      {'senia': 'x', 'letra': 'X', 'emparejada': false, 'error': false},
+      {'senia': 'y', 'letra': 'Y', 'emparejada': false, 'error': false},
+      {'senia': 'z', 'letra': 'Z', 'emparejada': false, 'error': false},
     ],
     'parejasBarajadas': <Map<String, dynamic>>[],
     'seleccionado': null,
@@ -43,17 +46,38 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
   };
 
   Map<String, dynamic> estadoOrdenar = {
-    'senias': ['s', 'q', 'r', 'o', 'p'],
-    'orden': ['O', 'P', 'Q', 'R', 'S'],
+    'senias': ['z', 'x', 'v', 'y', 'w', 'u', 't'],
+    'orden': ['T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
     'ordenActual': <String>[],
     'completado': false,
     'slots': <Map<String, String>?>[
-      null,
-      null,
-      null,
-      null,
-      null,
+      null, null, null, null, null, null, null,
     ],
+    'error': false,
+  };
+
+  // Estados para actividades nuevas
+  Map<String, dynamic> estadoReconocimiento = {
+    'seniasMostradas': ['t', 'u', 'v'],
+    'opcionesDisponibles': ['T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+    'respuestasCorrectas': ['T', 'U', 'V'],
+    'seleccionadas': <String>[],
+    'completado': false,
+  };
+
+  Map<String, dynamic> estadoPalabra = {
+    'palabra': 'COMER',
+    'letrasDisponibles': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+    'slots': <String?>[null, null, null, null, null],
+    'error': false,
+  };
+
+
+  Map<String, dynamic> estadoSenasPalabra = {
+    'palabra': 'MUNDO',
+    'senias': ['m', 'u', 'n', 'd', 'o'],
+    'letrasDisponibles': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+    'slots': <String?>[null, null, null, null, null],
     'error': false,
   };
 
@@ -76,48 +100,59 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     {
       'tipo': 'seleccionMultiple',
       'titulo': '¿Qué letra representa esta seña?',
-      'senia': 'p',
-      'opciones': ['Q', 'P', 'R'],
-      'correcta': 'P',
-      'hint': 'Los dedos índice y medio apuntan hacia abajo formando una "P"',
+      'senia': 'w',
+      'opciones': ['V', 'W', 'X'],
+      'correcta': 'W',
+      'hint': 'Tres dedos extendidos hacia arriba formando "W"',
+      'completado': false,
+    },
+    {
+      'tipo': 'reconocimiento',
+      'titulo': 'Selecciona las letras que representan estas señas',
       'completado': false,
     },
     {
       'tipo': 'ordenar',
       'titulo': 'Organiza las señas en orden alfabético',
-      'senias': ['s', 'q', 'r', 'o', 'p'],
-      'orden': ['O', 'P', 'Q', 'R', 'S'],
-      'completado': false,
-    },
-    {
-      'tipo': 'seleccionMultiple',
-      'titulo': '¿Cuál es la seña para la letra S?',
-      'senia': 's',
-      'opciones': ['R', 'S', 'Q'],
-      'correcta': 'S',
-      'hint': 'El puño cerrado con el pulgar sobre los dedos',
+      'senias': ['z', 'x', 'v', 'y', 'w', 'u', 't'],
+      'orden': ['T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
       'completado': false,
     },
     {
       'tipo': 'escribir',
       'titulo': 'Escribe la letra que representa esta seña',
-      'senia': 'q',
-      'respuesta': 'Q',
-      'hint': 'El dedo índice y pulgar apuntan hacia abajo formando una "Q"',
+      'senia': 'z',
+      'respuesta': 'Z',
+      'hint': 'El dedo índice traza una "Z" en el aire',
+      'completado': false,
+    },
+    {
+      'tipo': 'construirPalabra',
+      'titulo': 'Arrastra las letras para formar esta palabra',
+      'palabra': 'COMER',
+      'completado': false,
+    },
+    {
+      'tipo': 'interpretarSeñas',
+      'titulo': 'Lee las señas y forma la palabra',
+      'senias': ['m', 'u', 'n', 'd', 'o'],
+      'palabra': 'MUNDO',
       'completado': false,
     },
   ];
 
   // Mapas de hints para las señas
   final Map<String, String> hints = {
-    'o': 'La mano forma un círculo, como la letra "O"',
-    'p': 'Los dedos índice y medio apuntan hacia abajo, formando "P"',
-    'q': 'El dedo índice y pulgar apuntan hacia abajo, como "Q"',
-    'r': 'Los dedos índice y medio se cruzan, formando "R"',
-    's': 'El puño cerrado con el pulgar sobre los dedos, como "S"',
+    't': 'El puño cerrado con el pulgar entre los dedos',
+    'u': 'Los dedos índice y medio juntos hacia arriba',
+    'v': 'Los dedos índice y medio separados formando "V"',
+    'w': 'Tres dedos extendidos hacia arriba',
+    'x': 'El dedo índice doblado formando gancho',
+    'y': 'El pulgar y meñique extendidos',
+    'z': 'El dedo índice traza una "Z" en el aire',
   };
 
-  final NivelesService _nivelesService = NivelesService(); // Añadir esta línea
+  final NivelesService _nivelesService = NivelesService();
 
   @override
   void initState() {
@@ -156,6 +191,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     );
 
     _barajarCartasEmparejamiento();
+    _barajarLetrasDisponibles();
   }
 
   void _barajarCartasEmparejamiento() {
@@ -192,6 +228,16 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       estadoEmparejamiento['senias'] = senias;
       estadoEmparejamiento['letras'] = letras;
     });
+  }
+
+  void _barajarLetrasDisponibles() {
+    List<String> letras = List.from(estadoPalabra['letrasDisponibles']);
+    letras.shuffle();
+    estadoPalabra['letrasDisponibles'] = letras;
+    
+    List<String> letrasSenas = List.from(estadoSenasPalabra['letrasDisponibles']);
+    letrasSenas.shuffle();
+    estadoSenasPalabra['letrasDisponibles'] = letrasSenas;
   }
 
   @override
@@ -535,36 +581,21 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       child: Stack(
         children: [
-          // Fondo de la barra
           Container(
-            height: 10,
             decoration: BoxDecoration(
-              color:
-                  theme.brightness == Brightness.dark
-                      ? theme.dividerColor
-                      : const Color.fromARGB(255, 187, 185, 189),
-              borderRadius: BorderRadius.circular(10),
+              color: theme.dividerColor,
+              borderRadius: BorderRadius.circular(5),
             ),
           ),
-          // Progreso
           AnimatedBuilder(
             animation: _progressAnimation,
             builder: (context, child) {
-              double progress =
-                  (ejercicioActual +
-                      (_respuestaCorrecta && _mostrandoFeedback ? 1 : 0)) /
-                  totalEjercicios;
               return FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progress,
+                widthFactor: _progressAnimation.value,
                 child: Container(
-                  height: 10,
                   decoration: BoxDecoration(
-                    color:
-                        theme
-                            .colorScheme
-                            .primary, // Usar el color primary del theme
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF58CC02),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
               );
@@ -581,10 +612,16 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
         return _buildEmparejamiento(theme);
       case 'seleccionMultiple':
         return _buildSeleccionMultiple(ejercicio, theme);
+      case 'reconocimiento':
+        return _buildReconocimiento(theme);
       case 'ordenar':
         return _buildOrdenar(ejercicio, theme);
       case 'escribir':
         return _buildEscribir(ejercicio, theme);
+      case 'construirPalabra':
+        return _buildConstruirPalabra(ejercicio, theme);
+      case 'interpretarSenias':
+        return _buildInterpretarSenas(ejercicio, theme);
       default:
         return const SizedBox();
     }
@@ -593,113 +630,70 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
   Widget _buildEmparejamiento(ThemeData theme) {
     return Column(
       children: [
+        const SizedBox(height: 20),
+        // Título informativo
         Text(
-          'Toca las cartas para emparejarlas',
+          'Mantén presionado las señas para ver pistas',
           style: TextStyle(
-            fontSize: 16,
-            color: theme.textTheme.bodyMedium?.color,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 10),
-
-        // Contador de progreso
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '${estadoEmparejamiento['parejasCorrectas']} de 5 parejas',
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
+            fontSize: 14,
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            fontStyle: FontStyle.italic,
           ),
         ),
-        const SizedBox(height: 10),
-
-        Expanded(
-          child: Row(
-            children: [
-              // Columna de señas
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      'Señas',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.separated(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: estadoEmparejamiento['parejas'].length,
-                        separatorBuilder:
-                            (context, index) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final carta = estadoEmparejamiento['senias'][index];
-                          return _buildCartaEmparejamiento(
-                            carta['id'],
-                            carta['contenido'],
-                            carta['emparejada'],
-                            carta['error'],
-                            true, // Es seña
-                            theme,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 20),
-
-              // Columna de letras
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      'Letras',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: theme.textTheme.bodyLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.separated(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: estadoEmparejamiento['parejas'].length,
-                        separatorBuilder:
-                            (context, index) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final carta = estadoEmparejamiento['letras'][index];
-                          return _buildCartaEmparejamiento(
-                            carta['id'],
-                            carta['contenido'],
-                            carta['emparejada'],
-                            carta['error'],
-                            false, // Es letra
-                            theme,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        const SizedBox(height: 20),
+        
+        // Señas
+        Text(
+          'Señas',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: theme.textTheme.bodyLarge?.color,
           ),
+        ),
+        const SizedBox(height: 15),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: estadoEmparejamiento['senias'].map<Widget>((senia) {
+            return _buildCartaEmparejamiento(
+              senia['id'],
+              senia['contenido'],
+              senia['emparejada'],
+              senia['error'],
+              true,
+              theme,
+            );
+          }).toList(),
+        ),
+        
+        const SizedBox(height: 30),
+        
+        // Letras
+        Text(
+          'Letras',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
+        ),
+        const SizedBox(height: 15),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: estadoEmparejamiento['letras'].map<Widget>((letra) {
+            return _buildCartaEmparejamiento(
+              letra['id'],
+              letra['contenido'],
+              letra['emparejada'],
+              letra['error'],
+              false,
+              theme,
+            );
+          }).toList(),
         ),
       ],
     );
@@ -742,12 +736,12 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       onLongPress: esSenia ? () => _mostrarHint(contenido) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 90,
-        height: 65,
+        width: 70,
+        height: 55,
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor, width: 2),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -758,14 +752,14 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
         ),
         child: Center(
           child: emparejada
-              ? const Icon(Icons.check, color: Colors.white, size: 32)
+              ? const Icon(Icons.check, color: Colors.white, size: 24)
               : error
-              ? const Icon(Icons.close, color: Colors.white, size: 32)
+              ? const Icon(Icons.close, color: Colors.white, size: 24)
               : Text(
                 contenido,
                 style: TextStyle(
                   fontFamily: esSenia ? 'ChileanSignLanguage' : null,
-                  fontSize: esSenia ? 40 : 32,
+                  fontSize: esSenia ? 28 : 20,
                   fontWeight: esSenia ? FontWeight.normal : FontWeight.bold,
                   color: textColor,
                 ),
@@ -787,7 +781,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
           _marcarParejaCorrecta(primeraCarta, carta);
           estadoEmparejamiento['parejasCorrectas']++;
 
-          if (estadoEmparejamiento['parejasCorrectas'] == 5) {
+          if (estadoEmparejamiento['parejasCorrectas'] == 7) {
             _verificarRespuesta(true);
           }
         } else {
@@ -808,7 +802,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     });
   }
 
-  // Corregir el método _marcarError para manejar correctamente las cartas incorrectas
   void _marcarError(String carta1, String carta2) {
     // Marcar error en las señas
     for (var senia in estadoEmparejamiento['senias']) {
@@ -828,7 +821,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     _shakeController.forward();
   }
 
-  // Corregir el método _limpiarErrores para asegurarnos de que todos los errores se limpian
   void _limpiarErrores() {
     // Limpiar error en señas
     for (var senia in estadoEmparejamiento['senias']) {
@@ -841,7 +833,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     }
   }
 
-  // Modifica _esParejaCorrecto para usar directamente las referencias
   bool _esParejaCorrecto(String carta1, String carta2) {
     // Encuentra las cartas por id
     Map<String, dynamic>? carta1Data;
@@ -873,7 +864,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     return false;
   }
 
-  // También modifica _marcarParejaCorrecta para actualizar el estado correctamente
   void _marcarParejaCorrecta(String carta1, String carta2) {
     // Marca las cartas como emparejadas tanto en senias como en letras
     for (var senia in estadoEmparejamiento['senias']) {
@@ -1038,6 +1028,152 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     );
   }
 
+  Widget _buildReconocimiento(ThemeData theme) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          
+          // Señas a reconocer
+          Text(
+            'Reconoce estas señas:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: estadoReconocimiento['seniasMostradas'].map<Widget>((senia) {
+              return GestureDetector(
+                onLongPress: () => _mostrarHint(senia),
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      senia,
+                      style: const TextStyle(
+                        fontFamily: 'ChileanSignLanguage',
+                        fontSize: 50,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          Text(
+            'Mantén presionado para ver pistas',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // Opciones de letras
+          Text(
+            'Selecciona las letras correspondientes:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: estadoReconocimiento['opcionesDisponibles'].map<Widget>((letra) {
+              bool seleccionada = estadoReconocimiento['seleccionadas'].contains(letra);
+              
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (seleccionada) {
+                      estadoReconocimiento['seleccionadas'].remove(letra);
+                    } else {
+                      if (estadoReconocimiento['seleccionadas'].length < 3) {
+                        estadoReconocimiento['seleccionadas'].add(letra);
+                      }
+                    }
+                    
+                    // Verificar si se completó
+                    if (estadoReconocimiento['seleccionadas'].length == 3) {
+                      _verificarReconocimiento();
+                    }
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: seleccionada ? const Color(0xFF1CB0F6) : theme.cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: seleccionada ? const Color(0xFF1CB0F6) : theme.dividerColor,
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      letra,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: seleccionada ? Colors.white : theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _verificarReconocimiento() {
+    List<String> seleccionadas = List.from(estadoReconocimiento['seleccionadas']);
+    List<String> correctas = List.from(estadoReconocimiento['respuestasCorrectas']);
+    
+    seleccionadas.sort();
+    correctas.sort();
+    
+    bool esCorrecto = seleccionadas.length == correctas.length &&
+        seleccionadas.every((elemento) => correctas.contains(elemento));
+    
+    if (!esCorrecto) {
+      _perderVida();
+      setState(() {
+        estadoReconocimiento['seleccionadas'].clear();
+      });
+      _shakeController.forward().then((_) {
+        _shakeController.reset();
+      });
+    } else {
+      _verificarRespuesta(true);
+    }
+  }
+
   Widget _buildOrdenar(Map<String, dynamic> ejercicio, ThemeData theme) {
     return AnimatedBuilder(
       animation: _shakeAnimation,
@@ -1069,100 +1205,105 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                       width: 2,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(5, (index) {
-                      return DragTarget<Map<String, String>>(
-                        onAcceptWithDetails: (details) {
-                          final data = details.data;
-                          setState(() {
-                            if (estadoOrdenar['slots'][index] != null) {
-                              return;
-                            }
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(7, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: DragTarget<Map<String, String>>(
+                            onAcceptWithDetails: (details) {
+                              final data = details.data;
+                              setState(() {
+                                if (estadoOrdenar['slots'][index] != null) {
+                                  return;
+                                }
 
-                            int oldIndex = -1;
-                            for (int i = 0; i < estadoOrdenar['slots'].length; i++) {
-                              var slot = estadoOrdenar['slots'][i];
-                              if (slot != null && slot['senia'] == data['senia']) {
-                                oldIndex = i;
-                                break;
-                              }
-                            }
+                                int oldIndex = -1;
+                                for (int i = 0; i < estadoOrdenar['slots'].length; i++) {
+                                  var slot = estadoOrdenar['slots'][i];
+                                  if (slot != null && slot['senia'] == data['senia']) {
+                                    oldIndex = i;
+                                    break;
+                                  }
+                                }
 
-                            if (oldIndex != -1) {
-                              estadoOrdenar['slots'][oldIndex] = null;
-                            }
+                                if (oldIndex != -1) {
+                                  estadoOrdenar['slots'][oldIndex] = null;
+                                }
 
-                            estadoOrdenar['slots'][index] = data;
-                            estadoOrdenar['error'] = false;
+                                estadoOrdenar['slots'][index] = data;
+                                estadoOrdenar['error'] = false;
 
-                            bool allFilled = estadoOrdenar['slots'].every(
-                              (slot) => slot != null,
-                            );
+                                bool allFilled = estadoOrdenar['slots'].every(
+                                  (slot) => slot != null,
+                                );
 
-                            if (allFilled) {
-                              _verificarOrden();
-                            }
-                          });
-                        },
-                        builder: (context, candidateData, rejectedData) {
-                          bool hasContent = estadoOrdenar['slots'][index] != null;
-                          bool isHovering = candidateData.isNotEmpty;
+                                if (allFilled) {
+                                  _verificarOrden();
+                                }
+                              });
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              bool hasContent = estadoOrdenar['slots'][index] != null;
+                              bool isHovering = candidateData.isNotEmpty;
 
-                          return Container(
-                            width: 60,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: hasContent
-                                  ? theme.cardColor
-                                  : isHovering
-                                  ? const Color(0xFF1CB0F6).withOpacity(0.2)
-                                  : theme.cardColor,
-                              border: Border.all(
-                                color: isHovering
-                                    ? const Color(0xFF1CB0F6)
-                                    : theme.dividerColor,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: hasContent
-                                ? GestureDetector(
-                                  onLongPress: () => _mostrarHint(estadoOrdenar['slots'][index]!['senia']!),
-                                  child: Center(
-                                    child: Text(
-                                      estadoOrdenar['slots'][index]!['senia']!,
-                                      style: const TextStyle(
-                                        fontFamily: 'ChileanSignLanguage',
-                                        fontSize: 30,
+                              return Container(
+                                width: 45,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: hasContent
+                                      ? theme.cardColor
+                                      : isHovering
+                                      ? const Color(0xFF1CB0F6).withOpacity(0.2)
+                                      : theme.cardColor,
+                                  border: Border.all(
+                                    color: isHovering
+                                        ? const Color(0xFF1CB0F6)
+                                        : theme.dividerColor,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: hasContent
+                                    ? GestureDetector(
+                                      onLongPress: () => _mostrarHint(estadoOrdenar['slots'][index]!['senia']!),
+                                      child: Center(
+                                        child: Text(
+                                          estadoOrdenar['slots'][index]!['senia']!,
+                                          style: const TextStyle(
+                                            fontFamily: 'ChileanSignLanguage',
+                                            fontSize: 25,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    : Center(
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )
-                                : Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                          );
-                        },
-                      );
-                    }),
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                    ),
                   ),
                 ),
 
-                // Botón para limpiar
                 if (estadoOrdenar['slots'].any((slot) => slot != null))
                   TextButton.icon(
                     onPressed: () {
                       setState(() {
                         estadoOrdenar['slots'] = <Map<String, String>?>[
-                          null, null, null, null, null,
+                          null, null, null, null, null, null, null,
                         ];
                         estadoOrdenar['error'] = false;
                       });
@@ -1181,8 +1322,8 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
 
                 // Señas para arrastrar
                 Wrap(
-                  spacing: 15,
-                  runSpacing: 15,
+                  spacing: 8,
+                  runSpacing: 8,
                   alignment: WrapAlignment.center,
                   children: ejercicio['senias'].map<Widget>((senia) {
                     Map<String, String> seniaData = {
@@ -1198,11 +1339,11 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                       feedback: Material(
                         color: Colors.transparent,
                         child: Container(
-                          width: 70,
-                          height: 70,
+                          width: 50,
+                          height: 50,
                           decoration: BoxDecoration(
                             color: const Color(0xFF1CB0F6),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.3),
@@ -1216,7 +1357,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                               senia,
                               style: const TextStyle(
                                 fontFamily: 'ChileanSignLanguage',
-                                fontSize: 25,
+                                fontSize: 20,
                                 color: Colors.white,
                               ),
                             ),
@@ -1224,11 +1365,11 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                         ),
                       ),
                       childWhenDragging: Container(
-                        width: 70,
-                        height: 70,
+                        width: 60,
+                        height: 50,
                         decoration: BoxDecoration(
                           color: theme.disabledColor,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: GestureDetector(
@@ -1237,11 +1378,11 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                           opacity: yaUsada ? 0.3 : 1.0,
                           duration: const Duration(milliseconds: 300),
                           child: Container(
-                            width: 90,
-                            height: 70,
+                            width: 60,
+                            height: 50,
                             decoration: BoxDecoration(
                               color: theme.cardColor,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: theme.dividerColor,
                                 width: 2,
@@ -1259,7 +1400,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                                 senia,
                                 style: const TextStyle(
                                   fontFamily: 'ChileanSignLanguage',
-                                  fontSize: 40,
+                                  fontSize: 28,
                                 ),
                               ),
                             ),
@@ -1310,11 +1451,13 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
 
   String _seniaALetra(String senia) {
     const Map<String, String> conversion = {
-      'o': 'O',
-      'p': 'P',
-      'q': 'Q',
-      'r': 'R',
-      's': 'S',
+      't': 'T',
+      'u': 'U',
+      'v': 'V',
+      'w': 'W',
+      'x': 'X',
+      'y': 'Y',
+      'z': 'Z',
     };
     return conversion[senia] ?? senia.toUpperCase();
   }
@@ -1469,6 +1612,598 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     );
   }
 
+  Widget _buildConstruirPalabra(Map<String, dynamic> ejercicio, ThemeData theme) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) {
+        double shake = estadoPalabra['error']
+            ? _shakeAnimation.value * 10 * (1 - _shakeAnimation.value)
+            : 0;
+
+        return Transform.translate(
+          offset: Offset(shake, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                
+                // Palabra objetivo
+                Text(
+                  ejercicio['palabra'],
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
+                    letterSpacing: 2,
+                  ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Área de slots para construir la palabra
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: estadoPalabra['error']
+                        ? const Color(0xFFFFEBEE)
+                        : theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: estadoPalabra['error']
+                          ? const Color(0xFFFF4B4B)
+                          : theme.dividerColor,
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(5, (index) {
+                      return DragTarget<String>(
+                        onAcceptWithDetails: (details) {
+                          final letra = details.data;
+                          setState(() {
+                            if (estadoPalabra['slots'][index] != null) {
+                              return;
+                            }
+
+                            // Remover la letra de otros slots si ya estaba usada
+                            for (int i = 0; i < estadoPalabra['slots'].length; i++) {
+                              if (estadoPalabra['slots'][i] == letra) {
+                                estadoPalabra['slots'][i] = null;
+                                break;
+                              }
+                            }
+
+                            estadoPalabra['slots'][index] = letra;
+                            estadoPalabra['error'] = false;
+
+                            // Verificar si se completó la palabra
+                            bool allFilled = estadoPalabra['slots'].every(
+                              (slot) => slot != null,
+                            );
+
+                            if (allFilled) {
+                              _verificarPalabraFormada();
+                            }
+                          });
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          bool hasContent = estadoPalabra['slots'][index] != null;
+                          bool isHovering = candidateData.isNotEmpty;
+
+                          return Container(
+                            width: 50,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: hasContent
+                                  ? theme.cardColor
+                                  : isHovering
+                                  ? const Color(0xFF1CB0F6).withOpacity(0.2)
+                                  : theme.cardColor,
+                              border: Border.all(
+                                color: isHovering
+                                    ? const Color(0xFF1CB0F6)
+                                    : theme.dividerColor,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: hasContent
+                                  ? Text(
+                                    estadoPalabra['slots'][index]!,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.textTheme.bodyLarge?.color,
+                                    ),
+                                  )
+                                  : Text(
+                                    '${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Botón reiniciar si hay letras colocadas
+                if (estadoPalabra['slots'].any((slot) => slot != null))
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        estadoPalabra['slots'] = <String?>[null, null, null, null, null];
+                        estadoPalabra['error'] = false;
+                      });
+                    },
+                    icon: const Icon(Icons.refresh, color: Color(0xFF1CB0F6)),
+                    label: const Text(
+                      'Reiniciar',
+                      style: TextStyle(
+                        color: Color(0xFF1CB0F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Letras disponibles para arrastrar
+                Text(
+                  'Arrastra las letras:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                // Grid de letras más compacto para teléfono
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6, // 6 columnas para que quepa en teléfono
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: estadoPalabra['letrasDisponibles'].length,
+                  itemBuilder: (context, index) {
+                    String letra = estadoPalabra['letrasDisponibles'][index];
+                    bool yaUsada = estadoPalabra['slots'].contains(letra);
+
+                    return Draggable<String>(
+                      data: letra,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1CB0F6),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              letra,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Container(
+                        decoration: BoxDecoration(
+                          color: theme.disabledColor.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: AnimatedOpacity(
+                        opacity: yaUsada ? 0.3 : 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.dividerColor,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              letra,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: theme.textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _verificarPalabraFormada() {
+    String palabraFormada = estadoPalabra['slots'].join('');
+    String palabraCorrecta = estadoPalabra['palabra'];
+
+    if (palabraFormada == palabraCorrecta) {
+      _verificarRespuesta(true);
+    } else {
+      _perderVida();
+      setState(() {
+        estadoPalabra['error'] = true;
+      });
+      _shakeController.forward().then((_) {
+        _shakeController.reset();
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            setState(() {
+              estadoPalabra['error'] = false;
+            });
+          }
+        });
+      });
+    }
+  }
+
+  Widget _buildInterpretarSenas(Map<String, dynamic> ejercicio, ThemeData theme) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) {
+        double shake = estadoSenasPalabra['error']
+            ? _shakeAnimation.value * 10 * (1 - _shakeAnimation.value)
+            : 0;
+
+        return Transform.translate(
+          offset: Offset(shake, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                
+                // Título explicativo
+                Text(
+                  'Lee estas señas y forma la palabra:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Señas que forman la palabra
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor, width: 2),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: estadoSenasPalabra['senias'].map<Widget>((senia) {
+                      return GestureDetector(
+                        onLongPress: () => _mostrarHint(senia),
+                        child: Container(
+                          width: 50,
+                          height: 60,
+                          child: Center(
+                            child: Text(
+                              senia,
+                              style: const TextStyle(
+                                fontFamily: 'ChileanSignLanguage',
+                                fontSize: 35,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+                
+                Text(
+                  'Mantén presionado las señas para ver pistas',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Área de slots para la respuesta
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: estadoSenasPalabra['error']
+                        ? const Color(0xFFFFEBEE)
+                        : theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: estadoSenasPalabra['error']
+                          ? const Color(0xFFFF4B4B)
+                          : theme.dividerColor,
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(5, (index) {
+                      return DragTarget<String>(
+                        onAcceptWithDetails: (details) {
+                          final letra = details.data;
+                          setState(() {
+                            if (estadoSenasPalabra['slots'][index] != null) {
+                              return;
+                            }
+
+                            // Remover la letra de otros slots si ya estaba usada
+                            for (int i = 0; i < estadoSenasPalabra['slots'].length; i++) {
+                              if (estadoSenasPalabra['slots'][i] == letra) {
+                                estadoSenasPalabra['slots'][i] = null;
+                                break;
+                              }
+                            }
+
+                            estadoSenasPalabra['slots'][index] = letra;
+                            estadoSenasPalabra['error'] = false;
+
+                            // Verificar si se completó la palabra
+                            bool allFilled = estadoSenasPalabra['slots'].every(
+                              (slot) => slot != null,
+                            );
+
+                            if (allFilled) {
+                              _verificarInterpretacionSenas();
+                            }
+                          });
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          bool hasContent = estadoSenasPalabra['slots'][index] != null;
+                          bool isHovering = candidateData.isNotEmpty;
+
+                          return Container(
+                            width: 50,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: hasContent
+                                  ? theme.cardColor
+                                  : isHovering
+                                  ? const Color(0xFF1CB0F6).withOpacity(0.2)
+                                  : theme.cardColor,
+                              border: Border.all(
+                                color: isHovering
+                                    ? const Color(0xFF1CB0F6)
+                                    : theme.dividerColor,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: hasContent
+                                  ? Text(
+                                    estadoSenasPalabra['slots'][index]!,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.textTheme.bodyLarge?.color,
+                                    ),
+                                  )
+                                  : Text(
+                                    '${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Botón reiniciar si hay letras colocadas
+                if (estadoSenasPalabra['slots'].any((slot) => slot != null))
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        estadoSenasPalabra['slots'] = <String?>[null, null, null, null, null];
+                        estadoSenasPalabra['error'] = false;
+                      });
+                    },
+                    icon: const Icon(Icons.refresh, color: Color(0xFF1CB0F6)),
+                    label: const Text(
+                      'Reiniciar',
+                      style: TextStyle(
+                        color: Color(0xFF1CB0F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Letras disponibles para arrastrar
+                Text(
+                  'Arrastra las letras:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                // Grid de letras más compacto para teléfono
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6, // 6 columnas para que quepa en teléfono
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: estadoSenasPalabra['letrasDisponibles'].length,
+                  itemBuilder: (context, index) {
+                    String letra = estadoSenasPalabra['letrasDisponibles'][index];
+                    bool yaUsada = estadoSenasPalabra['slots'].contains(letra);
+
+                    return Draggable<String>(
+                      data: letra,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1CB0F6),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              letra,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Container(
+                        decoration: BoxDecoration(
+                          color: theme.disabledColor.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: AnimatedOpacity(
+                        opacity: yaUsada ? 0.3 : 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.dividerColor,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              letra,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: theme.textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _verificarInterpretacionSenas() {
+    String palabraFormada = estadoSenasPalabra['slots'].join('');
+    String palabraCorrecta = estadoSenasPalabra['palabra'];
+
+    if (palabraFormada == palabraCorrecta) {
+      _verificarRespuesta(true);
+    } else {
+      _perderVida();
+      setState(() {
+        estadoSenasPalabra['error'] = true;
+      });
+      _shakeController.forward().then((_) {
+        _shakeController.reset();
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            setState(() {
+              estadoSenasPalabra['error'] = false;
+            });
+          }
+        });
+      });
+    }
+  }
+
   Widget _buildFeedbackYBoton(ThemeData theme) {
     if (!_mostrandoFeedback) return const SizedBox(height: 80);
 
@@ -1477,88 +2212,76 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       builder: (context, child) {
         return Transform.scale(
           scale: _feedbackAnimation.value,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.only(top: 20),
-            decoration: BoxDecoration(
-              color:
-                  _respuestaCorrecta
-                      ? const Color(0xFFD7FFB8)
-                      : const Color(0xFFFFE6E6),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color:
-                    _respuestaCorrecta
-                        ? const Color(0xFF58CC02)
-                        : const Color(0xFFFF4B4B),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color:
-                            _respuestaCorrecta
-                                ? const Color(0xFF58CC02)
-                                : const Color(0xFFFF4B4B),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _respuestaCorrecta ? Icons.check : Icons.close,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              
+              // Feedback visual
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+                decoration: BoxDecoration(
+                  color: _respuestaCorrecta 
+                      ? const Color(0xFF58CC02) 
+                      : const Color(0xFFFF4B4B),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_respuestaCorrecta 
+                          ? const Color(0xFF58CC02) 
+                          : const Color(0xFFFF4B4B)).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    const SizedBox(width: 15),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _respuestaCorrecta ? Icons.check_circle : Icons.cancel,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
                     Text(
-                      _respuestaCorrecta
-                          ? '¡Excelente!'
-                          : '¡Respuesta incorrecta!',
-                      style: TextStyle(
-                        color:
-                            _respuestaCorrecta
-                                ? const Color(0xFF58CC02)
-                                : const Color(0xFFFF4B4B),
-                        fontSize: 20,
+                      _respuestaCorrecta ? '¡Correcto!' : '¡Incorrecto!',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                if (_respuestaCorrecta) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF58CC02),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+              ),
+              
+              if (_respuestaCorrecta) ...[
+                const SizedBox(height: 25),
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF58CC02),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      onPressed: _continuarSiguienteEjercicio,
-                      child: const Text(
-                        'CONTINUAR',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
+                    ),
+                    onPressed: _continuarSiguienteEjercicio,
+                    child: const Text(
+                      'CONTINUAR',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
                       ),
                     ),
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         );
       },
@@ -1588,12 +2311,24 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       } else if (ejercicios[ejercicioActual]['tipo'] == 'ordenar') {
         setState(() {
           estadoOrdenar['slots'] = <Map<String, String>?>[
-            null, null, null, null, null,
+            null, null, null, null, null, null, null,
           ];
         });
       } else if (ejercicios[ejercicioActual]['tipo'] == 'seleccionMultiple') {
         setState(() {
           _opcionSeleccionada = null;
+        });
+      } else if (ejercicios[ejercicioActual]['tipo'] == 'reconocimiento') {
+        setState(() {
+          estadoReconocimiento['seleccionadas'].clear();
+        });
+      } else if (ejercicios[ejercicioActual]['tipo'] == 'construirPalabra') {
+        setState(() {
+          estadoPalabra['slots'] = <String?>[null, null, null, null, null];
+        });
+      } else if (ejercicios[ejercicioActual]['tipo'] == 'interpretarSeñas') {
+        setState(() {
+          estadoSenasPalabra['slots'] = <String?>[null, null, null, null, null];
         });
       }
 
@@ -1640,7 +2375,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icono de celebración
             Container(
               width: 80,
               height: 80,
@@ -1656,7 +2390,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
             ),
             const SizedBox(height: 20),
 
-            // Título
             Text(
               '¡Lección completada!',
               style: TextStyle(
@@ -1668,9 +2401,8 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
             ),
             const SizedBox(height: 10),
 
-            // Descripción
             Text(
-              'Has practicado las letras O, P, Q, R y S',
+              'Has completado todas las letras del abecedario en lengua de señas',
               style: TextStyle(
                 fontSize: 16,
                 color: theme.textTheme.bodyMedium?.color,
@@ -1679,7 +2411,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
             ),
             const SizedBox(height: 25),
 
-            // Estadísticas
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -1737,7 +2468,6 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
             ),
             const SizedBox(height: 25),
 
-            // Botón con loading mientras se guarda el progreso
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -1767,7 +2497,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     );
   }
 
-  // Nuevo método para completar nivel y guardar progreso
+  // Método para completar nivel y guardar progreso
   Future<void> _completarNivelYContinuar(BuildContext context) async {
     try {
       // Mostrar loading
@@ -1783,7 +2513,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
 
       // Guardar progreso en Firestore
       bool exito = await _nivelesService.completarNivel(
-        numeroNivel: 4, // Nivel 4
+        numeroNivel: 5, // Nivel 5
         aciertos: aciertos,
         totalEjercicios: totalEjercicios,
         vidasRestantes: vidas,
@@ -1792,9 +2522,9 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
 
       // Cerrar loading
       Navigator.pop(context);
-      
+
       if (exito) {
-        // Mostrar mensaje de éxito y nivel desbloqueado
+        // Mostrar mensaje de éxito
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -1803,7 +2533,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
-                    '¡Nivel 4 completado! Nivel 5 desbloqueado',
+                    '¡Felicitaciones! Has completado todo el abecedario',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -1822,9 +2552,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
         Navigator.pop(context); // Cierra diálogo de finalización
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const PantallaNiveles(),
-          ),
+          MaterialPageRoute(builder: (context) => const PantallaNiveles()),
         );
       } else {
         // Error al guardar
@@ -1839,7 +2567,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     } catch (e) {
       // Cerrar loading si está abierto
       Navigator.pop(context);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
