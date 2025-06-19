@@ -1,5 +1,6 @@
 import 'package:OratioLingo/screens/sesion/verificacion.dart';
 import 'package:flutter/material.dart';
+import 'package:OratioLingo/utils/password_validator.dart';
 import '../../services/firestore_services.dart';
 
 class RegistrarmeScreen extends StatelessWidget {
@@ -35,7 +36,7 @@ class _RegistroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         CircleAvatar(
@@ -78,7 +79,7 @@ class _RegistroFormState extends State<_RegistroForm> {
   final _confirmPasswordController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _telefonoController = TextEditingController();
-  
+
   DateTime? _fechaNacimiento;
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -99,13 +100,12 @@ class _RegistroFormState extends State<_RegistroForm> {
   // Mostrar selector de fecha
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
-      
       context: context,
       initialDate: _fechaNacimiento ?? DateTime(2000),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null && picked != _fechaNacimiento) {
       setState(() {
         _fechaNacimiento = picked;
@@ -161,7 +161,7 @@ class _RegistroFormState extends State<_RegistroForm> {
   // Registrar usuario
   Future<void> _registrarUsuario() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     // Validar que las contraseñas coincidan
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -188,17 +188,14 @@ class _RegistroFormState extends State<_RegistroForm> {
         fechaNacimiento: _fechaNacimiento,
         numeroTelefono: _telefonoController.text.trim(),
       );
-      
+
       if (mounted) {
         _mostrarDialogoVerificacion();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -232,7 +229,10 @@ class _RegistroFormState extends State<_RegistroForm> {
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             validator: (value) {
@@ -249,11 +249,17 @@ class _RegistroFormState extends State<_RegistroForm> {
             controller: _nombreUsuarioController,
             decoration: InputDecoration(
               labelText: 'Nombre de usuario',
-              prefixIcon: Icon(Icons.alternate_email, color: theme.iconTheme.color),
+              prefixIcon: Icon(
+                Icons.alternate_email,
+                color: theme.iconTheme.color,
+              ),
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             validator: (value) {
@@ -275,7 +281,10 @@ class _RegistroFormState extends State<_RegistroForm> {
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             validator: (value) {
@@ -302,23 +311,23 @@ class _RegistroFormState extends State<_RegistroForm> {
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                   color: theme.iconTheme.color,
                 ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                onPressed:
+                    () => setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
+              // Añadir texto de ayuda
+              helperText:
+                  'Mínimo 8 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales',
+              helperMaxLines: 3,
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, ingresa una contraseña';
-              }
-              if (value.length < 6) {
-                return 'La contraseña debe tener al menos 6 caracteres';
-              }
-              return null;
-            },
+            validator: PasswordValidator.validate,
           ),
           const SizedBox(height: 16),
 
@@ -331,15 +340,23 @@ class _RegistroFormState extends State<_RegistroForm> {
               prefixIcon: Icon(Icons.lock, color: theme.iconTheme.color),
               suffixIcon: IconButton(
                 icon: Icon(
-                  _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                   color: theme.iconTheme.color,
                 ),
-                onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                onPressed:
+                    () => setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    ),
               ),
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
             validator: (value) {
@@ -361,7 +378,10 @@ class _RegistroFormState extends State<_RegistroForm> {
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -373,18 +393,26 @@ class _RegistroFormState extends State<_RegistroForm> {
             child: InputDecorator(
               decoration: InputDecoration(
                 labelText: 'Fecha de nacimiento (opcional)',
-                prefixIcon: Icon(Icons.calendar_today, color: theme.iconTheme.color),
+                prefixIcon: Icon(
+                  Icons.calendar_today,
+                  color: theme.iconTheme.color,
+                ),
                 border: inputBorder,
                 enabledBorder: inputBorder,
                 focusedBorder: inputBorder.copyWith(
-                  borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
                 ),
               ),
               child: Text(
                 _fechaNacimiento == null
                     ? 'Seleccionar fecha'
                     : '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
-                style: TextStyle(color: _fechaNacimiento == null ? Colors.grey : null),
+                style: TextStyle(
+                  color: _fechaNacimiento == null ? Colors.grey : null,
+                ),
               ),
             ),
           ),
@@ -400,7 +428,10 @@ class _RegistroFormState extends State<_RegistroForm> {
               border: inputBorder,
               enabledBorder: inputBorder,
               focusedBorder: inputBorder.copyWith(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -418,16 +449,17 @@ class _RegistroFormState extends State<_RegistroForm> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text('Registrarme', style: TextStyle(fontSize: 16)),
+            child:
+                _isLoading
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : const Text('Registrarme', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
@@ -463,10 +495,7 @@ class _RegistroFooter extends StatelessWidget {
         Text(
           'Al registrarte, aceptas nuestros términos y condiciones',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 12,
-          ),
+          style: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'package:OratioLingo/utils/password_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -310,16 +311,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           ),
                           filled: true,
                           fillColor: Colors.grey[50],
+                          helperText: PasswordValidator.helperText,
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingresa tu nueva contraseña';
-                          }
-                          if (value.length < 6) {
-                            return 'La contraseña debe tener al menos 6 caracteres';
-                          }
-                          return null;
-                        },
+                        validator: PasswordValidator.validate,
                       ),
 
                       const SizedBox(height: 20),
