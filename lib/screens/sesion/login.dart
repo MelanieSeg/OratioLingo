@@ -41,7 +41,27 @@ class LoginHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Logo de la aplicación
-        Image.asset('assets/images/logo.png', height: 100),
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withAlpha(77) // 0.2 opacidad en modo oscuro
+                    : Theme.of(
+                      context,
+                    ).primaryColor.withAlpha(25), // 0.1 opacidad en modo claro
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Image.asset(
+              'assets/images/logo.png',
+              height: 80,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         // Título de la aplicación
         Text(

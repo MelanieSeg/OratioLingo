@@ -39,13 +39,21 @@ class _RegistroHeader extends StatelessWidget {
 
     return Column(
       children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-          child: Icon(
-            Icons.fingerprint,
-            size: 40,
-            color: theme.colorScheme.primary,
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withAlpha(77)
+                    : theme.primaryColor.withAlpha(
+                      25,
+                    ), // 0.1 opacidad en modo claro
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
           ),
         ),
         const SizedBox(height: 16),
@@ -311,8 +319,8 @@ class _RegistroFormState extends State<_RegistroForm> {
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                   color: theme.iconTheme.color,
                 ),
-                onPressed: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                onPressed:
+                    () => setState(() => _obscurePassword = !_obscurePassword),
               ),
               border: inputBorder,
               enabledBorder: inputBorder,
@@ -345,9 +353,10 @@ class _RegistroFormState extends State<_RegistroForm> {
                       : Icons.visibility,
                   color: theme.iconTheme.color,
                 ),
-                onPressed: () => setState(
-                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
-                ),
+                onPressed:
+                    () => setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    ),
               ),
               border: inputBorder,
               enabledBorder: inputBorder,
@@ -410,16 +419,17 @@ class _RegistroFormState extends State<_RegistroForm> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text('Registrarme', style: TextStyle(fontSize: 16)),
+            child:
+                _isLoading
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : const Text('Registrarme', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),

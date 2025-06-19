@@ -190,11 +190,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withAlpha(25), // ~0.1 opacity
-                          image: const DecorationImage(
-                            image: AssetImage('lib/assets/images/logo.png'),
+                          // Color adaptado al tema actual
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white.withAlpha(
+                                    77,
+                                  ) // 0.2 opacidad en modo oscuro
+                                  : Theme.of(context).primaryColor.withAlpha(
+                                    25,
+                                  ), // 0.1 opacidad en modo claro
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Image.asset(
+                            'assets/images/logo.png',
                             fit: BoxFit.contain,
                           ),
                         ),
