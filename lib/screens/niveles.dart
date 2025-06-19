@@ -851,7 +851,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     // Determinar si el examen está desbloqueado (si completó al menos 3 niveles)
     int nivelesCompletados =
         _progreso.where((nivel) => nivel['isFinished'] == true).length;
-    bool examenDesbloqueado = nivelesCompletados >= 3;
+    bool examenDesbloqueado = nivelesCompletados == 6;
 
     return Container(
       padding: const EdgeInsets.all(24),
