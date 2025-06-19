@@ -315,9 +315,13 @@
     },
     {
       "name": "intl",
+<<<<<<< HEAD
       "rootUri": "file:///C:/Users/PC/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.20.2",
+=======
+      "rootUri": "file:///C:/Users/melit/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.18.1",
+>>>>>>> origin/melanie_flutter
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "2.12"
     },
     {
       "name": "leak_tracker",

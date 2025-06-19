@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:OratioLingo/services/estadisticas_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class EstadisticasScreen extends StatefulWidget {
   const EstadisticasScreen({super.key});
@@ -9,11 +11,13 @@ class EstadisticasScreen extends StatefulWidget {
 }
 
 class _EstadisticasScreenState extends State<EstadisticasScreen> {
-  final EstadisticasService _estadisticasService = EstadisticasService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  bool _cargando = true;
   Map<String, dynamic> _estadisticas = {};
   List<Map<String, dynamic>> _usuariosActivos = [];
-  bool _cargando = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -23,25 +27,244 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
   Future<void> _cargarEstadisticas() async {
     try {
-      setState(() => _cargando = true);
+      setState(() {
+        _cargando = true;
+        _errorMessage = null;
+      });
 
-      final estadisticas =
-          await _estadisticasService.obtenerEstadisticasGenerales();
-      final usuariosActivos =
-          await _estadisticasService.obtenerUsuariosActivos();
+      // Verificar permisos con una operación de lectura simple
+      try {
+        print("Verificando permisos de Firestore...");
+        final testRead = await _firestore.collection('usuarios').limit(1).get();
+        print(
+          "Permiso de lectura OK. Documentos encontrados: ${testRead.docs.length}",
+        );
+      } catch (e) {
+        print("Error de permisos en Firestore: $e");
+        if (mounted) {
+          setState(() {
+            _cargando = false;
+            _errorMessage = 'Error de permisos: $e';
+          });
+        }
+        return;
+      }
+
+      // Obtener estadísticas generales
+      await Future.wait([
+        _obtenerEstadisticasGenerales(),
+        _obtenerUsuariosActivos(),
+      ]);
 
       if (mounted) {
+        setState(() => _cargando = false);
+      }
+    } catch (e) {
+      print('Error general al cargar estadísticas: $e');
+      if (mounted) {
         setState(() {
-          _estadisticas = estadisticas;
-          _usuariosActivos = usuariosActivos;
           _cargando = false;
+          _errorMessage = 'Error al cargar estadísticas: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _obtenerEstadisticasGenerales() async {
+    try {
+      // 1. Total de usuarios desde Firestore
+      int totalUsuarios = 0;
+      try {
+        final usuariosSnapshot = await _firestore.collection('usuarios').get();
+        totalUsuarios = usuariosSnapshot.docs.length;
+        print('Total de usuarios: $totalUsuarios');
+      } catch (e) {
+        print('Error al contar usuarios: $e');
+      }
+
+      // 2. Total de videos
+      int totalVideos = 0;
+      try {
+        final videosSnapshot = await _firestore.collection('videos').get();
+        totalVideos = videosSnapshot.docs.length;
+        print('Total de videos: $totalVideos');
+      } catch (e) {
+        print('Error al contar videos: $e');
+      }
+
+      // 3. Niveles completados
+      int nivelesCompletados = 0;
+      try {
+        final usuariosSnapshot = await _firestore.collection('usuarios').get();
+
+        for (var doc in usuariosSnapshot.docs) {
+          try {
+            final nivelesSnapshot =
+                await _firestore
+                    .collection('usuarios')
+                    .doc(doc.id)
+                    .collection('niveles')
+                    .where('isFinished', isEqualTo: true)
+                    .get();
+
+            nivelesCompletados += nivelesSnapshot.docs.length;
+          } catch (e) {
+            print('Error al contar niveles para usuario ${doc.id}: $e');
+          }
+        }
+
+        print('Niveles completados: $nivelesCompletados');
+      } catch (e) {
+        print('Error al contar niveles completados: $e');
+      }
+
+      // 4. Administradores activos
+      int adminsActivos = 0;
+      try {
+        final adminsSnapshot =
+            await _firestore
+                .collection('administradores')
+                .where('activo', isEqualTo: true)
+                .get();
+        adminsActivos = adminsSnapshot.docs.length;
+        print('Administradores activos: $adminsActivos');
+      } catch (e) {
+        print('Error al contar administradores activos: $e');
+      }
+
+      // Guardar los datos
+      if (mounted) {
+        setState(() {
+          _estadisticas = {
+            'total_usuarios': totalUsuarios,
+            'total_videos': totalVideos,
+            'niveles_completados': nivelesCompletados,
+            'admins_activos': adminsActivos,
+          };
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _cargando = false);
-        _mostrarError('Error al cargar estadísticas: $e');
+      print('Error al obtener estadísticas generales: $e');
+    }
+  }
+
+  Future<void> _obtenerUsuariosActivos() async {
+    try {
+      List<Map<String, dynamic>> usuarios = [];
+
+      // Intentar obtener usuarios ordenados por última actividad desde Firestore
+      try {
+        final usuariosSnapshot =
+            await _firestore
+                .collection('usuarios')
+                .orderBy('ultima_actividad', descending: true)
+                .limit(5)
+                .get();
+
+        for (var doc in usuariosSnapshot.docs) {
+          final data = doc.data();
+
+          String actividadFormatada = 'No disponible';
+          DateTime? ultimaActividad;
+
+          // Usar ultima_actividad de Firestore
+          if (data.containsKey('ultima_actividad')) {
+            try {
+              final timestamp = data['ultima_actividad'] as Timestamp;
+              ultimaActividad = timestamp.toDate();
+              actividadFormatada = DateFormat(
+                'dd/MM/yyyy HH:mm',
+              ).format(ultimaActividad);
+            } catch (e) {
+              print('Error al formatear fecha de actividad: $e');
+            }
+          }
+
+          usuarios.add({
+            'id': doc.id,
+            'nombre': data['nombre'] ?? 'Usuario',
+            'correo': data['correo'] ?? 'No disponible',
+            'ultima_actividad': ultimaActividad,
+            'ultima_actividad_formatted': actividadFormatada,
+          });
+        }
+      } catch (e) {
+        print('Error con query ordenada, usando método alternativo: $e');
+
+        // Fallback: obtener todos y ordenar manualmente
+        final usuariosSnapshot = await _firestore.collection('usuarios').get();
+        List<Map<String, dynamic>> usuariosConFecha = [];
+
+        for (var doc in usuariosSnapshot.docs) {
+          try {
+            final data = doc.data();
+
+            DateTime? ultimaActividad;
+            String actividadFormatada = 'No disponible';
+
+            // Priorizar ultima_actividad de Firestore
+            if (data.containsKey('ultima_actividad')) {
+              try {
+                final timestamp = data['ultima_actividad'] as Timestamp;
+                ultimaActividad = timestamp.toDate();
+                actividadFormatada = DateFormat(
+                  'dd/MM/yyyy HH:mm',
+                ).format(ultimaActividad);
+              } catch (e) {
+                print('Error al procesar ultima_actividad: $e');
+              }
+            }
+
+            // Si no hay ultima_actividad, usar fechaCreacion como fallback
+            if (ultimaActividad == null && data.containsKey('fechaCreacion')) {
+              try {
+                final timestamp = data['fechaCreacion'] as Timestamp;
+                ultimaActividad = timestamp.toDate();
+                actividadFormatada = DateFormat(
+                  'dd/MM/yyyy HH:mm',
+                ).format(ultimaActividad);
+              } catch (e) {
+                print('Error al procesar fechaCreacion: $e');
+              }
+            }
+
+            usuariosConFecha.add({
+              'id': doc.id,
+              'nombre': data['nombre'] ?? 'Usuario',
+              'correo': data['correo'] ?? 'No disponible',
+              'ultima_actividad': ultimaActividad,
+              'ultima_actividad_formatted': actividadFormatada,
+            });
+          } catch (e) {
+            print('Error al procesar usuario ${doc.id}: $e');
+          }
+        }
+
+        // Ordenar por fecha de última actividad (más reciente primero)
+        usuariosConFecha.sort((a, b) {
+          final fechaA = a['ultima_actividad'] as DateTime?;
+          final fechaB = b['ultima_actividad'] as DateTime?;
+
+          if (fechaA == null && fechaB == null) return 0;
+          if (fechaA == null) return 1;
+          if (fechaB == null) return -1;
+
+          return fechaB.compareTo(fechaA);
+        });
+
+        // Tomar solo los 5 más recientes
+        usuarios = usuariosConFecha.take(5).toList();
       }
+
+      print('Usuarios activos encontrados: ${usuarios.length}');
+
+      if (mounted) {
+        setState(() {
+          _usuariosActivos = usuarios;
+        });
+      }
+    } catch (e) {
+      print('Error al obtener usuarios activos: $e');
     }
   }
 
@@ -70,9 +293,51 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
             child:
                 _cargando
                     ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                    ? _buildErrorView(theme, size)
                     : _buildEstadisticasContent(theme, size),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(ThemeData theme, Size size) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'Error al cargar estadísticas',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Error desconocido',
+              style: const TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _cargarEstadisticas,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reintentar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -82,9 +347,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
-      height:
-          (size.height * 0.07) +
-          topPadding, // Altura adaptable + padding superior
+      height: (size.height * 0.07) + topPadding,
       color: theme.colorScheme.primary,
       child: Padding(
         padding: EdgeInsets.only(top: topPadding),
@@ -112,9 +375,9 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
               child: Text(
                 'Estadísticas',
                 style: TextStyle(
-                  color: theme.cardColor,
-                  fontSize: size.width * 0.045,
+                  fontSize: size.width * 0.05,
                   fontWeight: FontWeight.bold,
+                  color: theme.cardColor,
                 ),
               ),
             ),
@@ -134,46 +397,33 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: EdgeInsets.all(size.width * 0.04), // Padding adaptable
+          padding: EdgeInsets.all(size.width * 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: size.height * 0.02),
-
               Text(
                 'Resumen General',
                 style: TextStyle(
-                  fontSize: size.width * 0.06, // Tamaño de fuente adaptable
+                  fontSize: size.width * 0.06,
                   fontWeight: FontWeight.bold,
                   color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
-
               SizedBox(height: size.height * 0.01),
-
               _buildEstadisticasGrid(theme, size),
-
               SizedBox(height: size.height * 0.03),
-
               Text(
-                'Usuarios Más Activos',
+                'Usuarios activos recientes',
                 style: TextStyle(
-                  fontSize: size.width * 0.05, // Tamaño de fuente adaptable
+                  fontSize: size.width * 0.05,
                   fontWeight: FontWeight.bold,
                   color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
-
               SizedBox(height: size.height * 0.02),
-
               _buildUsuariosActivos(theme, size),
-
-              SizedBox(height: size.height * 0.03),
-
-              _buildProgresoNiveles(theme, size),
-
-              // Espacio al final para evitar que el contenido quede pegado al borde
-              SizedBox(height: size.height * 0.03),
+              SizedBox(height: size.height * 0.05),
             ],
           ),
         ),
@@ -190,12 +440,6 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         'color': const Color(0xFF58CC02),
       },
       {
-        'titulo': 'Usuarios Activos Hoy',
-        'valor': _estadisticas['usuarios_activos_hoy'] ?? 0,
-        'icono': Icons.person_outline,
-        'color': const Color(0xFF2196F3),
-      },
-      {
         'titulo': 'Videos Disponibles',
         'valor': _estadisticas['total_videos'] ?? 0,
         'icono': Icons.video_library,
@@ -207,9 +451,14 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         'icono': Icons.emoji_events,
         'color': const Color(0xFFFF9800),
       },
+      {
+        'titulo': 'Administradores',
+        'valor': _estadisticas['admins_activos'] ?? 0,
+        'icono': Icons.admin_panel_settings,
+        'color': const Color(0xFF795548),
+      },
     ];
 
-    // Calcula el número de columnas según el ancho de la pantalla
     int crossAxisCount = size.width > 600 ? 3 : 2;
 
     return GridView.builder(
@@ -218,8 +467,8 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: 0.9,
-        crossAxisSpacing: size.width * 0.04, // Espaciado adaptable
-        mainAxisSpacing: size.width * 0.04, // Espaciado adaptable
+        crossAxisSpacing: size.width * 0.04,
+        mainAxisSpacing: size.width * 0.04,
       ),
       itemCount: stats.length,
       itemBuilder: (context, index) {
@@ -233,9 +482,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(
-          size.width * 0.04,
-        ), // Border radius adaptable
+        borderRadius: BorderRadius.circular(size.width * 0.04),
         boxShadow: [
           BoxShadow(
             color: (stat['color'] as Color).withAlpha((0.1 * 255).round()),
@@ -248,13 +495,13 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.all(size.width * 0.03), // Padding adaptable
+        padding: EdgeInsets.all(size.width * 0.03),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: size.width * 0.12, // Ancho adaptable
-              height: size.width * 0.12, // Altura adaptable
+              width: size.width * 0.12,
+              height: size.width * 0.12,
               decoration: BoxDecoration(
                 color: (stat['color'] as Color).withAlpha((0.1 * 255).round()),
                 borderRadius: BorderRadius.circular(size.width * 0.03),
@@ -262,27 +509,23 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
               child: Icon(
                 stat['icono'] as IconData,
                 color: stat['color'] as Color,
-                size: size.width * 0.07, // Tamaño del icono adaptable
+                size: size.width * 0.07,
               ),
             ),
-
             SizedBox(height: size.height * 0.015),
-
             Text(
               '${stat['valor']}',
               style: TextStyle(
-                fontSize: size.width * 0.06, // Tamaño de fuente adaptable
+                fontSize: size.width * 0.08,
                 fontWeight: FontWeight.bold,
                 color: theme.textTheme.bodyLarge?.color,
               ),
             ),
-
             SizedBox(height: size.height * 0.005),
-
             Text(
               stat['titulo'] as String,
               style: TextStyle(
-                fontSize: size.width * 0.03, // Tamaño de fuente adaptable
+                fontSize: size.width * 0.035,
                 color: theme.textTheme.bodyMedium?.color,
               ),
               textAlign: TextAlign.center,
@@ -311,10 +554,10 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
             ),
             SizedBox(height: size.height * 0.015),
             Text(
-              'No hay usuarios activos',
+              'No hay datos de usuarios activos',
               style: TextStyle(
                 fontSize: size.width * 0.04,
-                color: Colors.grey[600],
+                color: Colors.grey[500],
               ),
             ),
           ],
@@ -322,15 +565,12 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
       );
     }
 
-    // Limita a 4 usuarios para evitar problemas de espacio en pantallas pequeñas
-    final usuariosAMostrar = _usuariosActivos.take(4).toList();
-
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: usuariosAMostrar.length,
+      itemCount: _usuariosActivos.length,
       itemBuilder: (context, index) {
-        final usuario = usuariosAMostrar[index];
+        final usuario = _usuariosActivos[index];
         return Container(
           margin: EdgeInsets.only(bottom: size.height * 0.015),
           padding: EdgeInsets.all(size.width * 0.04),
@@ -343,36 +583,46 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
           ),
           child: Row(
             children: [
+              // Avatar del usuario (primera letra del nombre)
               Container(
                 width: size.width * 0.12,
                 height: size.width * 0.12,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF58CC02).withAlpha((0.1 * 255).round()),
                   shape: BoxShape.circle,
+                  color: theme.colorScheme.primary.withAlpha(
+                    (0.1 * 255).round(),
+                  ),
                 ),
-                child: Icon(
-                  Icons.person,
-                  color: const Color(0xFF58CC02),
-                  size: size.width * 0.06,
+                child: Center(
+                  child: Text(
+                    (usuario['nombre'] as String).isNotEmpty
+                        ? (usuario['nombre'] as String)[0].toUpperCase()
+                        : 'U',
+                    style: TextStyle(
+                      fontSize: size.width * 0.06,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               ),
-
-              SizedBox(width: size.width * 0.04),
-
+              SizedBox(width: size.width * 0.03),
+              // Información del usuario
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      usuario['nombre'] ?? 'Usuario',
+                      usuario['nombre'] as String,
                       style: TextStyle(
                         fontSize: size.width * 0.04,
                         fontWeight: FontWeight.bold,
                         color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
+                    SizedBox(height: size.height * 0.005),
                     Text(
-                      usuario['email'] ?? '',
+                      usuario['correo'] as String,
                       style: TextStyle(
                         fontSize: size.width * 0.035,
                         color: theme.textTheme.bodyMedium?.color,
@@ -381,36 +631,24 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                   ],
                 ),
               ),
-
+              // Última actividad
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: size.width * 0.02,
-                      vertical: size.height * 0.005,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(
-                        0xFF58CC02,
-                      ).withAlpha((0.1 * 255).round()),
-                      borderRadius: BorderRadius.circular(size.width * 0.03),
-                    ),
-                    child: Text(
-                      'Nivel ${usuario['nivel_actual'] ?? 1}',
-                      style: TextStyle(
-                        color: const Color(0xFF58CC02),
-                        fontSize: size.width * 0.03,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Text(
+                    'Última actividad',
+                    style: TextStyle(
+                      fontSize: size.width * 0.03,
+                      color: theme.textTheme.bodySmall?.color,
                     ),
                   ),
                   SizedBox(height: size.height * 0.005),
                   Text(
-                    '${usuario['puntos_totales'] ?? 0} pts',
+                    usuario['ultima_actividad_formatted'] as String,
                     style: TextStyle(
-                      fontSize: size.width * 0.03,
-                      color: theme.textTheme.bodyMedium?.color,
+                      fontSize: size.width * 0.035,
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -420,112 +658,5 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         );
       },
     );
-  }
-
-  Widget _buildProgresoNiveles(ThemeData theme, Size size) {
-    final nivelesData = _estadisticas['progreso_niveles'] ?? {};
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Progreso por Niveles',
-          style: TextStyle(
-            fontSize: size.width * 0.05,
-            fontWeight: FontWeight.bold,
-            color: theme.textTheme.bodyLarge?.color,
-          ),
-        ),
-
-        SizedBox(height: size.height * 0.02),
-
-        Container(
-          padding: EdgeInsets.all(size.width * 0.05),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(size.width * 0.04),
-          ),
-          child: Column(
-            children: [
-              for (int i = 1; i <= 6; i++) ...[
-                _buildNivelProgreso(
-                  i,
-                  nivelesData['nivel_$i'] ?? 0,
-                  theme,
-                  size,
-                ),
-                if (i < 6) SizedBox(height: size.height * 0.02),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNivelProgreso(
-    int numeroNivel,
-    int usuariosCompletados,
-    ThemeData theme,
-    Size size,
-  ) {
-    final totalUsuarios = _estadisticas['total_usuarios'] ?? 1;
-    final porcentaje =
-        totalUsuarios > 0 ? (usuariosCompletados / totalUsuarios) : 0.0;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Nivel $numeroNivel',
-              style: TextStyle(
-                fontSize: size.width * 0.04,
-                fontWeight: FontWeight.w600,
-                color: theme.textTheme.bodyLarge?.color,
-              ),
-            ),
-            Text(
-              '$usuariosCompletados usuarios (${(porcentaje * 100).toStringAsFixed(1)}%)',
-              style: TextStyle(
-                fontSize: size.width * 0.035,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-          ],
-        ),
-
-        SizedBox(height: size.height * 0.01),
-
-        LinearProgressIndicator(
-          value: porcentaje,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(
-            _getColorForNivel(numeroNivel),
-          ),
-          minHeight: size.height * 0.01, // Altura adaptable
-        ),
-      ],
-    );
-  }
-
-  Color _getColorForNivel(int nivel) {
-    switch (nivel) {
-      case 1:
-        return const Color(0xFF58CC02);
-      case 2:
-        return const Color(0xFF2196F3);
-      case 3:
-        return const Color(0xFF9C27B0);
-      case 4:
-        return const Color(0xFFFF9800);
-      case 5:
-        return const Color(0xFFF44336);
-      case 6:
-        return const Color(0xFF795548);
-      default:
-        return Colors.grey;
-    }
   }
 }

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:OratioLingo/utils/password_validator.dart';
 
 class EditarPerfilScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -407,6 +408,21 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                           await _mostrarMensaje(
                             scaffoldContext,
                             'La contraseña debe incluir al menos un caracter especial',
+                            true,
+                            isDarkMode,
+                          );
+                          return;
+                        }
+
+                        if (PasswordValidator.validate(
+                              newPasswordController.text,
+                            ) !=
+                            null) {
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            PasswordValidator.validate(
+                              newPasswordController.text,
+                            )!,
                             true,
                             isDarkMode,
                           );

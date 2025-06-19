@@ -4,6 +4,8 @@ import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/juegos.dart';
 import 'package:OratioLingo/screens/progreso.dart';
 import 'package:OratioLingo/screens/perfil.dart';
+import 'package:OratioLingo/utils/dialog_utils.dart';
+import 'package:OratioLingo/services/firestore_services.dart';
 
 class PantallaDiccionario extends StatefulWidget {
   const PantallaDiccionario({super.key});
@@ -905,8 +907,10 @@ class _PantallaDiccionarioState extends State<PantallaDiccionario> {
     }
   }
 
-  void _cerrarSesion() {
-    Navigator.pushReplacementNamed(context, '/login');
+  final FirestoreServices _firestoreServices = FirestoreServices();
+
+  void _cerrarSesion() async {
+    await DialogUtils.mostrarDialogoCerrarSesion(context, _firestoreServices);
   }
 
   void _abrirEditarPerfil() {

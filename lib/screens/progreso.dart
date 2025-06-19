@@ -9,6 +9,7 @@ import 'package:OratioLingo/services/firestore_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math' as math;
+import 'package:OratioLingo/utils/dialog_utils.dart';
 
 class PantallaProgreso extends StatefulWidget {
   const PantallaProgreso({super.key});
@@ -1131,11 +1132,8 @@ class _PantallaProgresoState extends State<PantallaProgreso>
     );
   }
 
-  void _cerrarSesion() {
-    _firestoreServices.cerrarSesion();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+  void _cerrarSesion() async {
+    await DialogUtils.mostrarDialogoCerrarSesion(context, _firestoreServices);
   }
 
   void _abrirEditarPerfil() {

@@ -7,6 +7,8 @@ import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/juegos/juego_memoria.dart';
 import 'package:OratioLingo/screens/juegos/juego_mano_3d.dart';
 import 'package:OratioLingo/screens/juegos/juego_quiz_rapido.dart';
+import 'package:OratioLingo/utils/dialog_utils.dart';
+import 'package:OratioLingo/services/firestore_services.dart';
 
 class PantallaJuegos extends StatefulWidget {
   const PantallaJuegos({super.key});
@@ -17,6 +19,8 @@ class PantallaJuegos extends StatefulWidget {
 
 class _PantallaJuegosState extends State<PantallaJuegos> {
   bool _isModalVisible = false;
+
+  final FirestoreServices _firestoreServices = FirestoreServices();
 
   final List<Map<String, dynamic>> juegos = [
     {
@@ -528,8 +532,8 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
     }
   }
 
-  void _cerrarSesion() {
-    Navigator.pushReplacementNamed(context, '/login');
+  void _cerrarSesion() async {
+    await DialogUtils.mostrarDialogoCerrarSesion(context, _firestoreServices);
   }
 
   void _abrirPantallaProgreso() {
