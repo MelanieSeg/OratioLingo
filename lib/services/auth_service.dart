@@ -13,14 +13,12 @@ class AuthService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
+      // Recargar el usuario para obtener el estado más reciente
+      await user.reload();
+
       // Busca en la colección de administradores
       final adminDoc =
           await _firestore.collection('administradores').doc(user.uid).get();
-
-      // Imprime información para depuración
-      print(
-        'Verificando si ${user.email} es admin. Existe en BD: ${adminDoc.exists}, Activo: ${adminDoc.data()?['activo']}',
-      );
 
       // El usuario es admin si existe en la colección y está activo
       return adminDoc.exists && adminDoc.data()?['activo'] == true;

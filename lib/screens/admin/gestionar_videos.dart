@@ -261,11 +261,37 @@ class _GestionarVideosScreenState extends State<GestionarVideosScreen> {
 
   Future<void> _abrirVideo(String url) async {
     try {
+      // Asegurarse que la URL sea válida
       final Uri uri = Uri.parse(url);
+
+      // Primer intento: usar LaunchMode.platformDefault (recomendado)
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        final bool success = await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+        );
+
+        if (!success) {
+          // Segundo intento: usar el navegador externo
+          final bool externalSuccess = await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+
+          if (!externalSuccess) {
+            // Tercer intento: modo navegador interno
+            await launchUrl(
+              uri,
+              mode: LaunchMode.inAppWebView,
+              webViewConfiguration: const WebViewConfiguration(
+                enableJavaScript: true,
+                enableDomStorage: true,
+              ),
+            );
+          }
+        }
       } else {
-        _mostrarError('No se puede abrir el video');
+        _mostrarError('No se puede abrir la URL: $url');
       }
     } catch (e) {
       _mostrarError('Error al abrir video: $e');

@@ -25,15 +25,11 @@ import 'package:OratioLingo/screens/admin/gestionar_videos.dart';
 import 'package:OratioLingo/screens/admin/estadisticas.dart';
 import 'package:OratioLingo/screens/admin/configuracion.dart';
 import 'package:OratioLingo/screens/splash.dart';
+import 'package:OratioLingo/widgets/admin_access_control.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Request permissions on app start
-  await Permission.storage.request();
-  await Permission.camera.request();
-  await Permission.photos.request();
 
   runApp(const MyApp());
 }
@@ -78,21 +74,38 @@ class MyApp extends StatelessWidget {
             '/nivel1': (context) => const Nivel1Screen(),
             '/nivel2': (context) => const Nivel2Screen(),
             '/nivel3': (context) => const Nivel3Screen(),
-            '/diccionario':
-                (context) => const PantallaDiccionario(), // Nueva ruta
+            '/diccionario': (context) => const PantallaDiccionario(),
             '/juegos': (context) => const PantallaJuegos(),
             '/videos': (context) => const PantallaVideos(),
             '/perfil': (context) => const PantallaPerfil(),
             '/progreso': (context) => const PantallaProgreso(),
 
-            // Rutas de administrador
-            '/admin': (context) => const AdminDashboard(),
+            // Rutas de administrador con control de acceso
+            '/admin':
+                (context) => AdminAccessControl(
+                  adminScreen: const AdminDashboard(),
+                  redirectScreen: const PantallaNiveles(),
+                ),
             '/admin/gestionar-admins':
-                (context) => const GestionarAdminsScreen(),
+                (context) => AdminAccessControl(
+                  adminScreen: const GestionarAdminsScreen(),
+                  redirectScreen: const PantallaNiveles(),
+                ),
             '/admin/gestionar-videos':
-                (context) => const GestionarVideosScreen(),
-            '/admin/estadisticas': (context) => const EstadisticasScreen(),
-            '/admin/configuracion': (context) => const ConfiguracionScreen(),
+                (context) => AdminAccessControl(
+                  adminScreen: const GestionarVideosScreen(),
+                  redirectScreen: const PantallaNiveles(),
+                ),
+            '/admin/estadisticas':
+                (context) => AdminAccessControl(
+                  adminScreen: const EstadisticasScreen(),
+                  redirectScreen: const PantallaNiveles(),
+                ),
+            '/admin/configuracion':
+                (context) => AdminAccessControl(
+                  adminScreen: const ConfiguracionScreen(),
+                  redirectScreen: const PantallaNiveles(),
+                ),
           },
 
           // Manejar rutas con argumentos

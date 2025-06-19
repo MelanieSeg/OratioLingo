@@ -121,17 +121,40 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body:
-          _cargando
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                children: [
-                  _buildTopBar(theme),
-                  Expanded(child: _buildMenuContainer(theme)),
-                ],
-              ),
+    /// Agregar PopScope para prevenir navegación hacia atrás no autorizada
+    return PopScope(
+      canPop: false, // Inicialmente no permitimos la navegación hacia atrás
+      onPopInvoked: (didPop) async {
+        // Esta función se llama cuando el usuario intenta retroceder
+        if (didPop) return; // Si ya se procesó, no hacemos nada
+
+        // Comprobamos si sigue siendo admin
+        final isAdmin = await _authService.esAdministrador();
+
+        if (!isAdmin) {
+          // Si ya no es admin, redirigir a la pantalla de inicio de sesión
+          if (context.mounted) {
+            Navigator.of(context).pushReplacementNamed('/login');
+          }
+        } else {
+          // Si es admin, permitir la navegación hacia atrás
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body:
+            _cargando
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                  children: [
+                    _buildTopBar(theme),
+                    Expanded(child: _buildMenuContainer(theme)),
+                  ],
+                ),
+      ),
     );
   }
 

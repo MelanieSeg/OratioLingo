@@ -26,6 +26,9 @@ class _SplashScreenState extends State<SplashScreen> {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
+        // Recargar el usuario para obtener el estado más reciente
+        await user.reload();
+
         // Usuario ya está autenticado
         final isAdmin = await _authService.esAdministrador();
 
