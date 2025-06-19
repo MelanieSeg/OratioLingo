@@ -47,13 +47,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     'orden': ['O', 'P', 'Q', 'R', 'S'],
     'ordenActual': <String>[],
     'completado': false,
-    'slots': <Map<String, String>?>[
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
+    'slots': <Map<String, String>?>[null, null, null, null, null],
     'error': false,
   };
 
@@ -61,7 +55,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
   String? _opcionSeleccionada;
   bool _mostrandoFeedback = false;
   bool _respuestaCorrecta = false;
-  
+
   // Sistema de hints
   bool _mostrandoHint = false;
   String _hintActual = '';
@@ -91,7 +85,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     },
     {
       'tipo': 'seleccionMultiple',
-      'titulo': '¿Cuál es la seña para la letra S?',
+      'titulo': '¿Qué letra representa esta seña?',
       'senia': 's',
       'opciones': ['R', 'S', 'Q'],
       'correcta': 'S',
@@ -212,7 +206,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       _mostrandoHint = true;
     });
     _hintController.forward();
-    
+
     _hintTimer?.cancel();
     _hintTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
@@ -249,144 +243,148 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icono de derrota
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFF4B4B),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.sentiment_dissatisfied,
-                color: Colors.white,
-                size: 50,
-              ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: theme.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 20),
-
-            // Título
-            Text(
-              '¡Se acabaron las vidas!',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: theme.textTheme.bodyLarge?.color,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-
-            // Descripción
-            Text(
-              'No te preocupes, puedes intentarlo de nuevo. ¡La práctica hace al maestro!',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 25),
-
-            // Estadísticas
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '$totalFallos',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF4B4B),
-                        ),
-                      ),
-                      Text(
-                        'Fallos',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                    ],
+            contentPadding: const EdgeInsets.all(24),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icono de derrota
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4B4B),
+                    shape: BoxShape.circle,
                   ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: theme.dividerColor,
+                  child: const Icon(
+                    Icons.sentiment_dissatisfied,
+                    color: Colors.white,
+                    size: 50,
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        '$aciertos',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF58CC02),
-                        ),
-                      ),
-                      Text(
-                        'Aciertos',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
+                ),
+                const SizedBox(height: 20),
 
-            // Botón volver
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1CB0F6),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
+                // Título
+                Text(
+                  '¡Se acabaron las vidas!',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+
+                // Descripción
+                Text(
+                  'No te preocupes, puedes intentarlo de nuevo. ¡La práctica hace al maestro!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 25),
+
+                // Estadísticas
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Cierra el diálogo
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => const PantallaNiveles(),
-                  )); // Vuelve a la pantalla de niveles
-                },
-                child: const Text(
-                  'VOLVER A NIVELES',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            '$totalFallos',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFFF4B4B),
+                            ),
+                          ),
+                          Text(
+                            'Fallos',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: theme.dividerColor,
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            '$aciertos',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF58CC02),
+                            ),
+                          ),
+                          Text(
+                            'Aciertos',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 25),
+
+                // Botón volver
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1CB0F6),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Cierra el diálogo
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PantallaNiveles(),
+                        ),
+                      ); // Vuelve a la pantalla de niveles
+                    },
+                    child: const Text(
+                      'VOLVER A NIVELES',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -427,12 +425,17 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                               children: List.generate(3, (index) {
                                 bool tieneVida = index < vidas;
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                  ),
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 300),
                                     child: Icon(
                                       Icons.favorite,
-                                      color: tieneVida ? Colors.red : Colors.grey[400],
+                                      color:
+                                          tieneVida
+                                              ? Colors.red
+                                              : Colors.grey[400],
                                       size: 30,
                                     ),
                                   ),
@@ -757,19 +760,20 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
           ],
         ),
         child: Center(
-          child: emparejada
-              ? const Icon(Icons.check, color: Colors.white, size: 32)
-              : error
-              ? const Icon(Icons.close, color: Colors.white, size: 32)
-              : Text(
-                contenido,
-                style: TextStyle(
-                  fontFamily: esSenia ? 'ChileanSignLanguage' : null,
-                  fontSize: esSenia ? 40 : 32,
-                  fontWeight: esSenia ? FontWeight.normal : FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
+          child:
+              emparejada
+                  ? const Icon(Icons.check, color: Colors.white, size: 32)
+                  : error
+                  ? const Icon(Icons.close, color: Colors.white, size: 32)
+                  : Text(
+                    contenido,
+                    style: TextStyle(
+                      fontFamily: esSenia ? 'ChileanSignLanguage' : null,
+                      fontSize: esSenia ? 40 : 32,
+                      fontWeight: esSenia ? FontWeight.normal : FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
         ),
       ),
     );
@@ -941,7 +945,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
           ),
 
           const SizedBox(height: 10),
-          
+
           // Instrucción para hint
           Text(
             'Mantén presionado para ver una pista',
@@ -996,18 +1000,19 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                       side: BorderSide(color: borderColor, width: 2),
                     ),
                   ),
-                  onPressed: _mostrandoFeedback
-                      ? null
-                      : () {
-                        setState(() {
-                          _opcionSeleccionada = opcion;
-                        });
-                        bool esCorrecta = opcion == ejercicio['correcta'];
-                        if (!esCorrecta) {
-                          _perderVida();
-                        }
-                        _verificarRespuesta(esCorrecta);
-                      },
+                  onPressed:
+                      _mostrandoFeedback
+                          ? null
+                          : () {
+                            setState(() {
+                              _opcionSeleccionada = opcion;
+                            });
+                            bool esCorrecta = opcion == ejercicio['correcta'];
+                            if (!esCorrecta) {
+                              _perderVida();
+                            }
+                            _verificarRespuesta(esCorrecta);
+                          },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1042,9 +1047,10 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     return AnimatedBuilder(
       animation: _shakeAnimation,
       builder: (context, child) {
-        double shake = estadoOrdenar['error']
-            ? _shakeAnimation.value * 10 * (1 - _shakeAnimation.value)
-            : 0;
+        double shake =
+            estadoOrdenar['error']
+                ? _shakeAnimation.value * 10 * (1 - _shakeAnimation.value)
+                : 0;
 
         return Transform.translate(
           offset: Offset(shake, 0),
@@ -1058,14 +1064,16 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                   margin: const EdgeInsets.symmetric(vertical: 20),
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: estadoOrdenar['error']
-                        ? const Color(0xFFFFEBEE)
-                        : theme.cardColor,
+                    color:
+                        estadoOrdenar['error']
+                            ? const Color(0xFFFFEBEE)
+                            : theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: estadoOrdenar['error']
-                          ? const Color(0xFFFF4B4B)
-                          : theme.dividerColor,
+                      color:
+                          estadoOrdenar['error']
+                              ? const Color(0xFFFF4B4B)
+                              : theme.dividerColor,
                       width: 2,
                     ),
                   ),
@@ -1081,9 +1089,14 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                             }
 
                             int oldIndex = -1;
-                            for (int i = 0; i < estadoOrdenar['slots'].length; i++) {
+                            for (
+                              int i = 0;
+                              i < estadoOrdenar['slots'].length;
+                              i++
+                            ) {
                               var slot = estadoOrdenar['slots'][i];
-                              if (slot != null && slot['senia'] == data['senia']) {
+                              if (slot != null &&
+                                  slot['senia'] == data['senia']) {
                                 oldIndex = i;
                                 break;
                               }
@@ -1106,49 +1119,60 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                           });
                         },
                         builder: (context, candidateData, rejectedData) {
-                          bool hasContent = estadoOrdenar['slots'][index] != null;
+                          bool hasContent =
+                              estadoOrdenar['slots'][index] != null;
                           bool isHovering = candidateData.isNotEmpty;
 
                           return Container(
                             width: 60,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: hasContent
-                                  ? theme.cardColor
-                                  : isHovering
-                                  ? const Color(0xFF1CB0F6).withOpacity(0.2)
-                                  : theme.cardColor,
+                              color:
+                                  hasContent
+                                      ? theme.cardColor
+                                      : isHovering
+                                      ? const Color(0xFF1CB0F6).withOpacity(0.2)
+                                      : theme.cardColor,
                               border: Border.all(
-                                color: isHovering
-                                    ? const Color(0xFF1CB0F6)
-                                    : theme.dividerColor,
+                                color:
+                                    isHovering
+                                        ? const Color(0xFF1CB0F6)
+                                        : theme.dividerColor,
                                 width: 2,
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: hasContent
-                                ? GestureDetector(
-                                  onLongPress: () => _mostrarHint(estadoOrdenar['slots'][index]!['senia']!),
-                                  child: Center(
-                                    child: Text(
-                                      estadoOrdenar['slots'][index]!['senia']!,
-                                      style: const TextStyle(
-                                        fontFamily: 'ChileanSignLanguage',
-                                        fontSize: 30,
+                            child:
+                                hasContent
+                                    ? GestureDetector(
+                                      onLongPress:
+                                          () => _mostrarHint(
+                                            estadoOrdenar['slots'][index]!['senia']!,
+                                          ),
+                                      child: Center(
+                                        child: Text(
+                                          estadoOrdenar['slots'][index]!['senia']!,
+                                          style: const TextStyle(
+                                            fontFamily: 'ChileanSignLanguage',
+                                            fontSize: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    : Center(
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: theme
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color
+                                              ?.withOpacity(0.6),
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )
-                                : Center(
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
                           );
                         },
                       );
@@ -1162,7 +1186,11 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                     onPressed: () {
                       setState(() {
                         estadoOrdenar['slots'] = <Map<String, String>?>[
-                          null, null, null, null, null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
                         ];
                         estadoOrdenar['error'] = false;
                       });
@@ -1184,90 +1212,91 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                   spacing: 15,
                   runSpacing: 15,
                   alignment: WrapAlignment.center,
-                  children: ejercicio['senias'].map<Widget>((senia) {
-                    Map<String, String> seniaData = {
-                      'senia': senia,
-                      'letra': _seniaALetra(senia),
-                    };
-                    bool yaUsada = estadoOrdenar['slots'].any(
-                      (slot) => slot != null && slot['senia'] == senia,
-                    );
+                  children:
+                      ejercicio['senias'].map<Widget>((senia) {
+                        Map<String, String> seniaData = {
+                          'senia': senia,
+                          'letra': _seniaALetra(senia),
+                        };
+                        bool yaUsada = estadoOrdenar['slots'].any(
+                          (slot) => slot != null && slot['senia'] == senia,
+                        );
 
-                    return Draggable<Map<String, String>>(
-                      data: seniaData,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1CB0F6),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
+                        return Draggable<Map<String, String>>(
+                          data: seniaData,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1CB0F6),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              senia,
-                              style: const TextStyle(
-                                fontFamily: 'ChileanSignLanguage',
-                                fontSize: 25,
-                                color: Colors.white,
+                              child: Center(
+                                child: Text(
+                                  senia,
+                                  style: const TextStyle(
+                                    fontFamily: 'ChileanSignLanguage',
+                                    fontSize: 25,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      childWhenDragging: Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: theme.disabledColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: GestureDetector(
-                        onLongPress: () => _mostrarHint(senia),
-                        child: AnimatedOpacity(
-                          opacity: yaUsada ? 0.3 : 1.0,
-                          duration: const Duration(milliseconds: 300),
-                          child: Container(
-                            width: 90,
+                          childWhenDragging: Container(
+                            width: 70,
                             height: 70,
                             decoration: BoxDecoration(
-                              color: theme.cardColor,
+                              color: theme.disabledColor,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: theme.dividerColor,
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
-                            child: Center(
-                              child: Text(
-                                senia,
-                                style: const TextStyle(
-                                  fontFamily: 'ChileanSignLanguage',
-                                  fontSize: 40,
+                          ),
+                          child: GestureDetector(
+                            onLongPress: () => _mostrarHint(senia),
+                            child: AnimatedOpacity(
+                              opacity: yaUsada ? 0.3 : 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: Container(
+                                width: 90,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: theme.cardColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: theme.dividerColor,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    senia,
+                                    style: const TextStyle(
+                                      fontFamily: 'ChileanSignLanguage',
+                                      fontSize: 40,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
                 ),
               ],
             ),
@@ -1367,7 +1396,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
           ),
 
           const SizedBox(height: 10),
-          
+
           Text(
             'Mantén presionado para ver una pista',
             style: TextStyle(
@@ -1445,15 +1474,18 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              onPressed: _escribirController.text.isEmpty
-                  ? null
-                  : () {
-                    bool esCorrecta = _escribirController.text.toUpperCase() == ejercicio['respuesta'];
-                    if (!esCorrecta) {
-                      _perderVida();
-                    }
-                    _verificarRespuesta(esCorrecta);
-                  },
+              onPressed:
+                  _escribirController.text.isEmpty
+                      ? null
+                      : () {
+                        bool esCorrecta =
+                            _escribirController.text.toUpperCase() ==
+                            ejercicio['respuesta'];
+                        if (!esCorrecta) {
+                          _perderVida();
+                        }
+                        _verificarRespuesta(esCorrecta);
+                      },
               child: const Text(
                 'COMPROBAR',
                 style: TextStyle(
@@ -1588,7 +1620,11 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       } else if (ejercicios[ejercicioActual]['tipo'] == 'ordenar') {
         setState(() {
           estadoOrdenar['slots'] = <Map<String, String>?>[
-            null, null, null, null, null,
+            null,
+            null,
+            null,
+            null,
+            null,
           ];
         });
       } else if (ejercicios[ejercicioActual]['tipo'] == 'seleccionMultiple') {
@@ -1631,139 +1667,140 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icono de celebración
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFF58CC02),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.emoji_events,
-                color: Colors.white,
-                size: 50,
-              ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: theme.cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 20),
-
-            // Título
-            Text(
-              '¡Lección completada!',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: theme.textTheme.bodyLarge?.color,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-
-            // Descripción
-            Text(
-              'Has practicado las letras O, P, Q, R y S',
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 25),
-
-            // Estadísticas
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '$aciertos/$totalEjercicios',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF58CC02),
-                        ),
-                      ),
-                      Text(
-                        'Aciertos',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                    ],
+            contentPadding: const EdgeInsets.all(24),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icono de celebración
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF58CC02),
+                    shape: BoxShape.circle,
                   ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: theme.dividerColor,
+                  child: const Icon(
+                    Icons.emoji_events,
+                    color: Colors.white,
+                    size: 50,
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        '$vidas',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF4B4B),
-                        ),
-                      ),
-                      Text(
-                        'Vidas restantes',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
+                ),
+                const SizedBox(height: 20),
 
-            // Botón con loading mientras se guarda el progreso
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF58CC02),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
+                // Título
+                Text(
+                  '¡Lección completada!',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+
+                // Descripción
+                Text(
+                  'Has practicado las letras O, P, Q, R y S',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 25),
+
+                // Estadísticas
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                ),
-                onPressed: () => _completarNivelYContinuar(context),
-                child: const Text(
-                  'CONTINUAR',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            '$aciertos/$totalEjercicios',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF58CC02),
+                            ),
+                          ),
+                          Text(
+                            'Aciertos',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: theme.dividerColor,
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            '$vidas',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFFF4B4B),
+                            ),
+                          ),
+                          Text(
+                            'Vidas restantes',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 25),
+
+                // Botón con loading mientras se guarda el progreso
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF58CC02),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () => _completarNivelYContinuar(context),
+                    child: const Text(
+                      'CONTINUAR',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -1774,11 +1811,12 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF58CC02)),
-          ),
-        ),
+        builder:
+            (context) => const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF58CC02)),
+              ),
+            ),
       );
 
       // Guardar progreso en Firestore
@@ -1792,7 +1830,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
 
       // Cerrar loading
       Navigator.pop(context);
-      
+
       if (exito) {
         // Mostrar mensaje de éxito y nivel desbloqueado
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1822,15 +1860,15 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
         Navigator.pop(context); // Cierra diálogo de finalización
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const PantallaNiveles(),
-          ),
+          MaterialPageRoute(builder: (context) => const PantallaNiveles()),
         );
       } else {
         // Error al guardar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Error al guardar progreso. Inténtalo de nuevo.'),
+            content: const Text(
+              'Error al guardar progreso. Inténtalo de nuevo.',
+            ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1839,7 +1877,7 @@ class _Nivel4ScreenState extends State<Nivel4Screen>
     } catch (e) {
       // Cerrar loading si está abierto
       Navigator.pop(context);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
