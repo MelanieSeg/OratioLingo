@@ -41,10 +41,7 @@ class LoginHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Logo de la aplicación
-        Image.asset(
-          'assets/images/logo.png', // Asegúrate de tener esta imagen
-          height: 100,
-        ),
+        Image.asset('assets/images/logo.png', height: 100),
         const SizedBox(height: 16),
         // Título de la aplicación
         Text(
@@ -54,7 +51,7 @@ class LoginHeader extends StatelessWidget {
             color: Theme.of(context).primaryColor,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         // Subtítulo o slogan
         Text(
           'Aprende lenguaje de señas con nosotros',
@@ -63,6 +60,7 @@ class LoginHeader extends StatelessWidget {
           ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
+        const SizedBox(height: 30),
       ],
     );
   }
@@ -258,47 +256,6 @@ class LoginFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Separador
-        Row(
-          children: [
-            Expanded(child: Divider()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text('O', style: TextStyle(color: Colors.grey)),
-            ),
-            Expanded(child: Divider()),
-          ],
-        ),
-        const SizedBox(height: 20),
-
-        // Opciones de inicio de sesión con redes sociales
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialLoginButton(
-              icon: 'assets/images/google_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Google
-              },
-            ),
-            const SizedBox(width: 16),
-            _SocialLoginButton(
-              icon: 'assets/images/facebook_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Facebook
-              },
-            ),
-            const SizedBox(width: 16),
-            _SocialLoginButton(
-              icon: 'assets/images/apple_icon.png',
-              onPressed: () {
-                // Implementar inicio de sesión con Apple
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-
         // Opción para registro
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
