@@ -49,19 +49,72 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
   }
 
   Future<void> _cerrarSesion() async {
-    FirestoreServices services = FirestoreServices();
+    final ThemeData themeData = Theme.of(context);
+    final isDarkMode = themeData.brightness == Brightness.dark;
 
-    try {
-      await services.cerrarSesion();
-      // Navegar a pantalla de login
-      if (mounted) {
-        print("Cerrando sesión...");
-        Navigator.pushReplacementNamed(context, '/login');
+    // Mostrar diálogo de confirmación
+    bool confirmar =
+        await showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+              title: Text(
+                '¿Cerrar sesión?',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              content: Text(
+                '¿Estás seguro de que deseas cerrar sesión?',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(color: const Color(0xFF6A4C93)),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6A4C93),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Cerrar sesión'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    // Si el usuario confirma, proceder con el cierre de sesión
+    if (confirmar) {
+      FirestoreServices services = FirestoreServices();
+
+      try {
+        await services.cerrarSesion();
+        // Navegar a pantalla de login
+        if (mounted) {
+          print("Cerrando sesión...");
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al cerrar sesión: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al cerrar sesión: $e')));
     }
   }
 
@@ -358,7 +411,7 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface, // Usa color del tema
+        color: theme.colorScheme.surface,
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -377,6 +430,12 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
             () => _navegarA('/niveles'),
           ),
           _buildNavItem(
+            'Diccionario',
+            Icons.book,
+            false,
+            () => _navegarA('/diccionario'),
+          ),
+          _buildNavItem(
             'Videos',
             Icons.play_circle,
             false,
@@ -389,10 +448,10 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
             () => _navegarA('/juegos'),
           ),
           _buildNavItem(
-            'Progreso',
-            Icons.trending_up,
+            'Perfil',
+            Icons.person,
             true,
-            () => _navegarA('/progreso'),
+            () => {}, // Ya estamos en perfil
           ),
         ],
       ),

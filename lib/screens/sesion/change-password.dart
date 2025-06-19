@@ -1,14 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:async'; // Añadir esta importación
+import 'dart:async';
 
 class ChangePasswordScreen extends StatefulWidget {
   final String email;
-  
-  const ChangePasswordScreen({
-    super.key,
-    required this.email,
-  });
+
+  const ChangePasswordScreen({super.key, required this.email});
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -19,7 +16,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _codeController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -47,17 +44,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         code: _codeController.text.trim(),
         newPassword: _newPasswordController.text.trim(),
       );
-      
+
       _mostrarDialogoExito();
     } catch (e) {
       String errorMessage = 'Error al cambiar la contraseña';
-      
+
       if (e.toString().contains('invalid-action-code')) {
         errorMessage = 'El código de verificación no es válido o ha expirado';
       } else if (e.toString().contains('weak-password')) {
         errorMessage = 'La contraseña es muy débil';
       }
-      
+
       _mostrarError(errorMessage);
     } finally {
       if (mounted) {
@@ -88,11 +85,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 28,
-              ),
+              Icon(Icons.check_circle, color: Colors.green, size: 28),
               const SizedBox(width: 12),
               const Text('¡Contraseña cambiada!'),
             ],
@@ -125,9 +118,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         content: Text(mensaje),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -139,7 +130,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 30.0,
+              vertical: 20.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -150,9 +144,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Logo y título
                 Center(
                   child: Column(
@@ -163,27 +157,31 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
                           image: const DecorationImage(
                             image: AssetImage('lib/assets/images/logo.png'),
                             fit: BoxFit.contain,
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 30),
-                      
+
                       Text(
                         "Cambiar contraseña",
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       Text(
                         "Ingresa el código de verificación que enviamos a ${widget.email} y tu nueva contraseña.",
                         style: TextStyle(
@@ -196,9 +194,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Formulario
                 Form(
                   key: _formKey,
@@ -215,7 +213,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       Row(
                         children: [
                           Expanded(
@@ -227,11 +225,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 prefixIcon: const Icon(Icons.security),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -258,9 +260,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Nueva contraseña
                       const Text(
                         'Nueva contraseña',
@@ -271,7 +273,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       TextFormField(
                         controller: _newPasswordController,
                         obscureText: _obscurePassword,
@@ -281,7 +283,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
                             onPressed: () {
                               setState(() {
@@ -317,9 +321,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           return null;
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Confirmar contraseña
                       const Text(
                         'Confirmar contraseña',
@@ -330,7 +334,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPassword,
@@ -340,11 +344,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                              _obscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
                             onPressed: () {
                               setState(() {
-                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
                               });
                             },
                           ),
@@ -379,9 +386,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Botón de cambiar contraseña
                 SizedBox(
                   width: double.infinity,
@@ -396,33 +403,32 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                       elevation: 2,
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                            : const Text(
+                              'Cambiar contraseña',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          )
-                        : const Text(
-                            'Cambiar contraseña',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Contador de redirección
-                if (_isLoading) ...{
-                  Center(
-                    child: _ContadorRedireccion(),
-                  ),
-                },
+                if (_isLoading) ...{Center(child: _ContadorRedireccion())},
               ],
             ),
           ),
@@ -453,7 +459,7 @@ class _ContadorRedireccionState extends State<_ContadorRedireccion> {
       setState(() {
         _segundosRestantes--;
       });
-      
+
       if (_segundosRestantes <= 0) {
         _timer?.cancel();
       }

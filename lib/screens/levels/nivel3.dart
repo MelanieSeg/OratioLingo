@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/niveles.dart';
+import 'package:OratioLingo/services/niveles_services.dart';
+import 'dart:async';
 
 class Nivel3Screen extends StatefulWidget {
   const Nivel3Screen({super.key});
@@ -1435,15 +1437,7 @@ class _Nivel3ScreenState extends State<Nivel3Screen>
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.pop(context); // Cierra el diálogo
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PantallaNiveles(),
-                        ), // Vuelve a la pantalla anterior
-                      );
-                    },
+                    onPressed: () => _completarNivelYContinuar(context),
                     child: const Text(
                       'CONTINUAR',
                       style: TextStyle(
@@ -1458,5 +1452,93 @@ class _Nivel3ScreenState extends State<Nivel3Screen>
             ),
           ),
     );
+  }
+
+  // Método para completar nivel y guardar progreso
+  Future<void> _completarNivelYContinuar(BuildContext context) async {
+    try {
+      // Mostrar loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF58CC02)),
+              ),
+            ),
+      );
+
+      // Instanciar el servicio de niveles
+      final NivelesService _nivelesService = NivelesService();
+
+      // Guardar progreso en Firestore
+      bool exito = await _nivelesService.completarNivel(
+        numeroNivel: 3, // Nivel 3
+        aciertos: aciertos,
+        totalEjercicios: totalEjercicios,
+        vidasRestantes:
+            3, // Asumiendo que no hay sistema de vidas en este nivel
+        fallosTotales: totalEjercicios - aciertos,
+      );
+
+      // Cerrar loading
+      Navigator.pop(context);
+
+      if (exito) {
+        // Mostrar mensaje de éxito y nivel desbloqueado
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    '¡Nivel 3 completado! Nivel 4 desbloqueado',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF58CC02),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Cerrar diálogos y volver a niveles
+        Navigator.pop(context); // Cierra diálogo de finalización
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaNiveles()),
+        );
+      } else {
+        // Error al guardar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Error al guardar progreso. Inténtalo de nuevo.',
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      // Cerrar loading si está abierto
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

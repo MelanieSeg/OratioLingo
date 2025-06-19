@@ -136,6 +136,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     BuildContext context,
     String mensaje,
     bool esError,
+    bool isDarkMode,
   ) {
     // Elimina cualquier SnackBar existente
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -143,14 +144,18 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     return ScaffoldMessenger.of(context)
         .showSnackBar(
           SnackBar(
-            content: Text(mensaje),
+            content: Text(
+              mensaje,
+              style: const TextStyle(
+                color: Colors.white, // Siempre texto blanco
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             backgroundColor: esError ? Colors.red : Colors.green,
-            duration: const Duration(seconds: 1), // Duración más corta
-            behavior:
-                SnackBarBehavior.floating, // Hace que flote sobre el contenido
-            margin: const EdgeInsets.all(8), // Agrega margen
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(8),
             shape: RoundedRectangleBorder(
-              // Bordes redondeados
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -167,6 +172,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     bool obscureConfirmPassword = true;
 
     final scaffoldContext = context;
+    final ThemeData themeData = Theme.of(context);
+    final isDarkMode = themeData.brightness == Brightness.dark;
 
     await showDialog(
       barrierDismissible: false,
@@ -175,7 +182,13 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           (BuildContext dialogContext) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  title: const Text('Cambiar Contraseña'),
+                  backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+                  title: Text(
+                    'Cambiar Contraseña',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -183,14 +196,30 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                         TextField(
                           controller: currentPasswordController,
                           obscureText: obscureCurrentPassword,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Contraseña actual',
+                            labelStyle: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
                             border: const OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color:
+                                    isDarkMode
+                                        ? Colors.white38
+                                        : Colors.black38,
+                              ),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 obscureCurrentPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: isDarkMode ? Colors.white70 : null,
                               ),
                               onPressed:
                                   () => setState(
@@ -205,15 +234,37 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                         TextField(
                           controller: newPasswordController,
                           obscureText: obscureNewPassword,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Nueva contraseña',
+                            labelStyle: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
                             border: const OutlineInputBorder(),
-                            helperText: 'Mínimo 6 caracteres',
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color:
+                                    isDarkMode
+                                        ? Colors.white38
+                                        : Colors.black38,
+                              ),
+                            ),
+                            helperText:
+                                'Mínimo 8 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales',
+                            helperStyle: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white60 : Colors.black45,
+                            ),
+                            helperMaxLines: 3,
                             suffixIcon: IconButton(
                               icon: Icon(
                                 obscureNewPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: isDarkMode ? Colors.white70 : null,
                               ),
                               onPressed:
                                   () => setState(
@@ -228,14 +279,30 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                         TextField(
                           controller: confirmNewPasswordController,
                           obscureText: obscureConfirmPassword,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Confirmar nueva contraseña',
+                            labelStyle: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
                             border: const OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color:
+                                    isDarkMode
+                                        ? Colors.white38
+                                        : Colors.black38,
+                              ),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 obscureConfirmPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: isDarkMode ? Colors.white70 : null,
                               ),
                               onPressed:
                                   () => setState(
@@ -252,11 +319,14 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Cancelar'),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(color: const Color(0xFF6A4C93)),
+                      ),
                     ),
                     TextButton(
                       onPressed: () async {
-                        // Validaciones básicas
+                        // Validaciones según los requisitos de Firebase
                         if (currentPasswordController.text.isEmpty ||
                             newPasswordController.text.isEmpty ||
                             confirmNewPasswordController.text.isEmpty) {
@@ -264,6 +334,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                             scaffoldContext,
                             'Por favor completa todos los campos',
                             true,
+                            isDarkMode,
                           );
                           return;
                         }
@@ -274,15 +345,70 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                             scaffoldContext,
                             'Las nuevas contraseñas no coinciden',
                             true,
+                            isDarkMode,
                           );
                           return;
                         }
 
-                        if (newPasswordController.text.length < 6) {
+                        // Validación de longitud mínima (8 caracteres)
+                        if (newPasswordController.text.length < 8) {
                           await _mostrarMensaje(
                             scaffoldContext,
-                            'La nueva contraseña debe tener al menos 6 caracteres',
+                            'La contraseña debe tener al menos 8 caracteres',
                             true,
+                            isDarkMode,
+                          );
+                          return;
+                        }
+
+                        // Validación de mayúsculas
+                        if (!RegExp(
+                          r'[A-Z]',
+                        ).hasMatch(newPasswordController.text)) {
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            'La contraseña debe incluir al menos una letra mayúscula',
+                            true,
+                            isDarkMode,
+                          );
+                          return;
+                        }
+
+                        // Validación de minúsculas
+                        if (!RegExp(
+                          r'[a-z]',
+                        ).hasMatch(newPasswordController.text)) {
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            'La contraseña debe incluir al menos una letra minúscula',
+                            true,
+                            isDarkMode,
+                          );
+                          return;
+                        }
+
+                        // Validación de números
+                        if (!RegExp(
+                          r'[0-9]',
+                        ).hasMatch(newPasswordController.text)) {
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            'La contraseña debe incluir al menos un número',
+                            true,
+                            isDarkMode,
+                          );
+                          return;
+                        }
+
+                        // Validación de caracteres especiales
+                        if (!RegExp(
+                          r'[!@#$%^&*(),.?":{}|<>]',
+                        ).hasMatch(newPasswordController.text)) {
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            'La contraseña debe incluir al menos un caracter especial',
+                            true,
+                            isDarkMode,
                           );
                           return;
                         }
@@ -305,6 +431,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                               scaffoldContext,
                               'Contraseña actualizada con éxito',
                               false,
+                              isDarkMode,
                             );
                           }
                         } on FirebaseAuthException catch (e) {
@@ -316,10 +443,18 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                             mensaje = 'La nueva contraseña es muy débil';
                           }
 
-                          await _mostrarMensaje(scaffoldContext, mensaje, true);
+                          await _mostrarMensaje(
+                            scaffoldContext,
+                            mensaje,
+                            true,
+                            isDarkMode,
+                          );
                         }
                       },
-                      child: const Text('Guardar'),
+                      child: Text(
+                        'Guardar',
+                        style: TextStyle(color: const Color(0xFF6A4C93)),
+                      ),
                     ),
                   ],
                 ),

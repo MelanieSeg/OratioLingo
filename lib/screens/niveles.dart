@@ -8,6 +8,7 @@ import 'package:OratioLingo/screens/perfil.dart';
 import 'package:OratioLingo/screens/videos.dart';
 import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/levels/nivel3.dart';
+import 'package:OratioLingo/screens/levels/nivel4.dart';
 import 'package:OratioLingo/services/niveles_services.dart';
 
 class PantallaNiveles extends StatefulWidget {
@@ -49,7 +50,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
       'numero': 4,
       'titulo': 'Letras O-S',
       'descripcion': 'Más señas por aprender',
-      'screen': () => const Nivel3Screen(),
+      'screen': () => const Nivel4Screen(),
     },
     {
       'numero': 5,
