@@ -10,6 +10,7 @@ import 'package:OratioLingo/screens/diccionario.dart';
 import 'package:OratioLingo/screens/levels/nivel3.dart';
 import 'package:OratioLingo/screens/levels/nivel4.dart';
 import 'package:OratioLingo/services/niveles_services.dart';
+import 'package:OratioLingo/utils/dialog_utils.dart';
 
 class PantallaNiveles extends StatefulWidget {
   const PantallaNiveles({super.key});
@@ -1073,7 +1074,7 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text("Cerrar Sesión"),
+                  child: const Text("Cerrar sesión"),
                 ),
               ),
             ],
@@ -1111,11 +1112,8 @@ class _PantallaNivelesState extends State<PantallaNiveles> {
     }
   }
 
-  void _cerrarSesion() {
-    _firestoreServices.cerrarSesion();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+  void _cerrarSesion() async {
+    await DialogUtils.mostrarDialogoCerrarSesion(context, _firestoreServices);
   }
 
   void _abrirEditarPerfil() {

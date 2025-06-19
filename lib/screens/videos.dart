@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:OratioLingo/screens/diccionario.dart';
+import 'package:OratioLingo/utils/dialog_utils.dart';
+import 'package:OratioLingo/services/firestore_services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<List<Map<String, dynamic>>> processVideos(
   List<QueryDocumentSnapshot> docs,
@@ -26,6 +29,9 @@ class _PantallaVideosState extends State<PantallaVideos>
   DocumentSnapshot? _lastDocument;
   bool _hasMore = true;
   final List<DocumentSnapshot> _videos = [];
+
+  // Añade esto como propiedad de clase
+  final FirestoreServices _firestoreServices = FirestoreServices();
 
   @override
   void initState() {
@@ -175,7 +181,7 @@ class _PantallaVideosState extends State<PantallaVideos>
       itemBuilder: (context, index) {
         final data = _videos[index].data() as Map<String, dynamic>;
         final titulo = data['titulo'] ?? '';
-        final imagen = data['imagen'] ?? '';
+        final imagen = data['miniatura'] ?? '';
         return Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -185,43 +191,92 @@ class _PantallaVideosState extends State<PantallaVideos>
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               // Abrir el video usando data['url']
+              if (data['url'] != null && data['url'].toString().isNotEmpty) {
+                final Uri uri = Uri.parse(data['url']);
+                launchUrl(
+                  uri,
+                  mode: LaunchMode.platformDefault,
+                ).catchError((e) => print('Error al abrir video: $e'));
+              }
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child:
-                      imagen.isNotEmpty
-                          ? ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                            child: CachedNetworkImage(
-                              imageUrl: imagen,
-                              fit: BoxFit.cover,
-                              placeholder:
-                                  (context, url) => Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                              errorWidget:
-                                  (context, url, error) => Icon(Icons.error),
-                            ),
-                          )
-                          : Container(
-                            decoration: BoxDecoration(
-                              color: theme.cardColor,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
+                  child: Stack(
+                    children: [
+                      // La imagen base
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: imagen,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          placeholder:
+                              (context, url) => const Center(
+                                child: CircularProgressIndicator(),
                               ),
+                          errorWidget:
+                              (context, url, error) => Container(
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.error_outline),
+                              ),
+                        ),
+                      ),
+                      // Overlay semi-transparente
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.5),
+                              ],
                             ),
-                            child: Center(
-                              child: Icon(
-                                Icons.play_circle_filled,
-                                color: theme.colorScheme.primary,
-                                size: 48,
+                          ),
+                        ),
+                      ),
+                      // Ícono de play en el centro
+                      const Positioned.fill(
+                        child: Center(
+                          child: Icon(
+                            Icons.play_circle_filled,
+                            color: Colors.white,
+                            size: 48,
+                          ),
+                        ),
+                      ),
+                      // Categoría en la esquina
+                      if (data['categoria'] != null)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              data['categoria'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
+                        ),
+                    ],
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -391,8 +446,9 @@ class _PantallaVideosState extends State<PantallaVideos>
     );
   }
 
-  void _cerrarSesion() {
-    Navigator.of(context).pushReplacementNamed('/login');
+  // Reemplaza el método _cerrarSesion()
+  void _cerrarSesion() async {
+    await DialogUtils.mostrarDialogoCerrarSesion(context, _firestoreServices);
   }
 
   void _abrirPantallaProgreso() {
